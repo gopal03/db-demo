@@ -1,0 +1,6 @@
+streamlit>=1.30.0
+pandas>=2.0.0
+pyvis>=0.3.2
+google-cloud-spanner>=3.40.0
+faker>=19.0.0
+protobuf>=4.21.0

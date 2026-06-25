@@ -1,0 +1,52 @@
+{
+  "Customers": [
+    { "customer_id": "cust-1", "name": "Victor Rostov", "type": "Individual", "risk_score": 10, "country": "Russia" },
+    { "customer_id": "cust-2", "name": "Elena Vance", "type": "Individual", "risk_score": 8, "country": "Cyprus" },
+    { "customer_id": "cust-3", "name": "Apex Holdings Ltd", "type": "Corporate", "risk_score": 9, "country": "Cayman Islands" },
+    { "customer_id": "cust-4", "name": "Alice Smith", "type": "Individual", "risk_score": 2, "country": "United States" },
+    { "customer_id": "cust-5", "name": "Bob Jones", "type": "Individual", "risk_score": 3, "country": "United Kingdom" },
+    { "customer_id": "cust-6", "name": "Panama Shell Services", "type": "Corporate", "risk_score": 10, "country": "Panama" }
+  ],
+  "Accounts": [
+    { "account_id": "acc-1", "bank_name": "Global Offshore Bank", "balance": 500000.00, "currency": "USD" },
+    { "account_id": "acc-2", "bank_name": "Zurich Private Bank", "balance": 450000.00, "currency": "USD" },
+    { "account_id": "acc-3", "bank_name": "Cayman Trust Bank", "balance": 400000.00, "currency": "USD" },
+    { "account_id": "acc-4", "bank_name": "Nicosia Bank", "balance": 1200000.00, "currency": "EUR" },
+    { "account_id": "acc-5", "bank_name": "US National Bank", "balance": 800000.00, "currency": "USD" },
+    { "account_id": "acc-6", "bank_name": "London Forex Clearing", "balance": 50000.00, "currency": "USD" },
+    { "account_id": "acc-7", "bank_name": "Delaware Shell Corp Bank", "balance": 10000.00, "currency": "USD" },
+    { "account_id": "acc-8", "bank_name": "Chase Bank", "balance": 15000.00, "currency": "USD" },
+    { "account_id": "acc-9", "bank_name": "Barclays", "balance": 22000.00, "currency": "GBP" }
+  ],
+  "Merchants": [
+    { "merchant_id": "merch-1", "name": "Grand Panama Casino", "category": "Casino", "risk_level": "HIGH" },
+    { "merchant_id": "merch-2", "name": "Caribbean Sovereign Fund", "category": "Asset Management", "risk_level": "HIGH" },
+    { "merchant_id": "merch-3", "name": "Amazon US", "category": "Retail", "risk_level": "LOW" },
+    { "merchant_id": "merch-4", "name": "Starbucks London", "category": "Food & Beverage", "risk_level": "LOW" }
+  ],
+  "CustomerOwnsAccount": [
+    { "customer_id": "cust-1", "account_id": "acc-4", "opened_at": "2024-01-15T08:00:00Z" },
+    { "customer_id": "cust-2", "account_id": "acc-1", "opened_at": "2024-03-22T10:30:00Z" },
+    { "customer_id": "cust-3", "account_id": "acc-2", "opened_at": "2023-11-05T14:15:00Z" },
+    { "customer_id": "cust-3", "account_id": "acc-3", "opened_at": "2023-11-06T09:00:00Z" },
+    { "customer_id": "cust-4", "account_id": "acc-5", "opened_at": "2022-05-18T11:00:00Z" },
+    { "customer_id": "cust-4", "account_id": "acc-8", "opened_at": "2025-02-10T16:45:00Z" },
+    { "customer_id": "cust-5", "account_id": "acc-9", "opened_at": "2021-08-12T13:20:00Z" },
+    { "customer_id": "cust-6", "account_id": "acc-6", "opened_at": "2024-09-01T10:00:00Z" },
+    { "customer_id": "cust-6", "account_id": "acc-7", "opened_at": "2024-09-02T10:00:00Z" }
+  ],
+  "AccountTransfers": [
+    { "account_id": "acc-1", "transfer_id": "tx-001", "dest_account_id": "acc-2", "amount": 150000.00, "timestamp": "2026-06-24T08:00:00Z" },
+    { "account_id": "acc-2", "transfer_id": "tx-002", "dest_account_id": "acc-3", "amount": 149500.00, "timestamp": "2026-06-24T08:15:00Z" },
+    { "account_id": "acc-3", "transfer_id": "tx-003", "dest_account_id": "acc-1", "amount": 149000.00, "timestamp": "2026-06-24T08:30:00Z" },
+    { "account_id": "acc-5", "transfer_id": "tx-004", "dest_account_id": "acc-6", "amount": 75000.00, "timestamp": "2026-06-24T10:00:00Z" },
+    { "account_id": "acc-6", "transfer_id": "tx-005", "dest_account_id": "acc-7", "amount": 72000.00, "timestamp": "2026-06-24T10:05:00Z" },
+    { "account_id": "acc-8", "transfer_id": "tx-006", "dest_account_id": "acc-9", "amount": 500.00, "timestamp": "2026-06-24T12:00:00Z" }
+  ],
+  "AccountPaysMerchant": [
+    { "account_id": "acc-4", "payment_id": "pay-001", "merchant_id": "merch-1", "amount": 250000.00, "timestamp": "2026-06-24T09:00:00Z" },
+    { "account_id": "acc-3", "payment_id": "pay-002", "merchant_id": "merch-2", "amount": 180000.00, "timestamp": "2026-06-24T09:30:00Z" },
+    { "account_id": "acc-8", "payment_id": "pay-003", "merchant_id": "merch-3", "amount": 120.00, "timestamp": "2026-06-24T11:00:00Z" },
+    { "account_id": "acc-9", "payment_id": "pay-004", "merchant_id": "merch-4", "amount": 8.50, "timestamp": "2026-06-24T11:15:00Z" }
+  ]
+}

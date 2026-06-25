@@ -1,0 +1,164 @@
+{
+  "graph_name": "SecurityGraph",
+  "nodes": [
+    {
+      "name": "Account",
+      "table_name": "Accounts",
+      "key": ["account_id"],
+      "properties": [
+        {"name": "account_id", "type": "STRING(36)", "nullable": false},
+        {"name": "name", "type": "STRING(100)", "nullable": false},
+        {"name": "type", "type": "STRING(50)", "nullable": false}
+      ],
+      "data_hints": {
+        "type": ["IAM User", "Service Account", "Group", "Workload Identity"]
+      }
+    },
+    {
+      "name": "Role",
+      "table_name": "Roles",
+      "key": ["role_id"],
+      "properties": [
+        {"name": "role_id", "type": "STRING(36)", "nullable": false},
+        {"name": "name", "type": "STRING(100)", "nullable": false},
+        {"name": "scope", "type": "STRING(100)", "nullable": false}
+      ],
+      "data_hints": {
+        "scope": ["Production-Infra", "Dev-Infra", "Data-Silo", "Network-Admin", "Billing"]
+      }
+    },
+    {
+      "name": "Resource",
+      "table_name": "Resources",
+      "key": ["resource_id"],
+      "properties": [
+        {"name": "resource_id", "type": "STRING(36)", "nullable": false},
+        {"name": "name", "type": "STRING(100)", "nullable": false},
+        {"name": "type", "type": "STRING(50)", "nullable": false}
+      ],
+      "data_hints": {
+        "type": ["VM", "Kubernetes Pod", "Database", "GCS Bucket", "Pub/Sub Topic", "Cloud Run Service"]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "name": "AssumesRole",
+      "table_name": "AccountAssumesRole",
+      "key": ["account_id", "role_id"],
+      "source": {
+        "node_name": "Account",
+        "key_map": {"account_id": "account_id"}
+      },
+      "destination": {
+        "node_name": "Role",
+        "key_map": {"role_id": "role_id"}
+      },
+      "properties": [
+        {"name": "account_id", "type": "STRING(36)", "nullable": false},
+        {"name": "role_id", "type": "STRING(36)", "nullable": false},
+        {"name": "assumed_at", "type": "TIMESTAMP", "nullable": true}
+      ],
+      "data_hints": {}
+    },
+    {
+      "name": "HasPermission",
+      "table_name": "RoleHasPermission",
+      "key": ["role_id", "resource_id"],
+      "source": {
+        "node_name": "Role",
+        "key_map": {"role_id": "role_id"}
+      },
+      "destination": {
+        "node_name": "Resource",
+        "key_map": {"resource_id": "resource_id"}
+      },
+      "properties": [
+        {"name": "role_id", "type": "STRING(36)", "nullable": false},
+        {"name": "resource_id", "type": "STRING(36)", "nullable": false},
+        {"name": "permission_level", "type": "STRING(50)", "nullable": false}
+      ],
+      "data_hints": {
+        "permission_level": ["Owner", "Editor", "Reader", "Admin", "Viewer"]
+      }
+    },
+    {
+      "name": "NetworkFlow",
+      "table_name": "ResourceNetworkFlow",
+      "key": ["source_resource_id", "dest_resource_id", "port"],
+      "source": {
+        "node_name": "Resource",
+        "key_map": {"source_resource_id": "resource_id"}
+      },
+      "destination": {
+        "node_name": "Resource",
+        "key_map": {"dest_resource_id": "resource_id"}
+      },
+      "properties": [
+        {"name": "source_resource_id", "type": "STRING(36)", "nullable": false},
+        {"name": "dest_resource_id", "type": "STRING(36)", "nullable": false},
+        {"name": "port", "type": "INT64", "nullable": false},
+        {"name": "protocol", "type": "STRING(10)", "nullable": false}
+      ],
+      "data_hints": {
+        "port": [22, 80, 443, 3306, 5432, 6379, 8080, 8443, 9000, 27017],
+        "protocol": ["TCP", "UDP", "HTTPS"]
+      }
+    }
+  ],
+  "seed_records": {
+    "Accounts": [
+      {"account_id": "acc-seed-001", "name": "compromised-ops-user", "type": "IAM User"},
+      {"account_id": "acc-seed-002", "name": "alice-dev", "type": "IAM User"},
+      {"account_id": "acc-seed-003", "name": "gke-service-account", "type": "Service Account"}
+    ],
+    "Roles": [
+      {"role_id": "role-seed-001", "name": "OpsAdminRole", "scope": "Production-Infra"},
+      {"role_id": "role-seed-002", "name": "DeveloperRole", "scope": "Dev-Infra"},
+      {"role_id": "role-seed-003", "name": "DatabaseReaderRole", "scope": "Data-Silo"}
+    ],
+    "Resources": [
+      {"resource_id": "res-seed-001", "name": "public-web-server", "type": "VM"},
+      {"resource_id": "res-seed-002", "name": "customer-db-prod", "type": "Database"},
+      {"resource_id": "res-seed-003", "name": "internal-payment-gateway", "type": "Kubernetes Pod"},
+      {"resource_id": "res-seed-004", "name": "billing-db-prod", "type": "Database"}
+    ],
+    "AccountAssumesRole": [
+      {"account_id": "acc-seed-001", "role_id": "role-seed-001", "assumed_at": null},
+      {"account_id": "acc-seed-002", "role_id": "role-seed-002", "assumed_at": null}
+    ],
+    "RoleHasPermission": [
+      {"role_id": "role-seed-001", "resource_id": "res-seed-001", "permission_level": "Owner"},
+      {"role_id": "role-seed-001", "resource_id": "res-seed-003", "permission_level": "Admin"},
+      {"role_id": "role-seed-002", "resource_id": "res-seed-003", "permission_level": "Reader"}
+    ],
+    "ResourceNetworkFlow": [
+      {"source_resource_id": "res-seed-001", "dest_resource_id": "res-seed-003", "port": 443, "protocol": "TCP"},
+      {"source_resource_id": "res-seed-003", "dest_resource_id": "res-seed-002", "port": 5432, "protocol": "TCP"},
+      {"source_resource_id": "res-seed-003", "dest_resource_id": "res-seed-004", "port": 3306, "protocol": "TCP"}
+    ]
+  },
+  "queries": [
+    {
+      "id": "q1_blast_radius",
+      "title": "Account Blast Radius Search",
+      "description": "Find all resources an attacker can reach from a compromised account via assumed roles and permissions.",
+      "gql": "GRAPH SecurityGraph\nMATCH (a:Account {name: 'compromised-ops-user'})-[:AssumesRole]->(role:Role)-[:HasPermission]->(res:Resource)\nRETURN a.name AS compromised_account, role.name AS role_used, res.name AS resource_reached, res.type AS resource_type",
+      "talk_track": "In a security incident, standard SQL requires complex recursive CTEs to trace hops. With Spanner Graph, we cleanly match the compromised account, the roles they can assume, and all resources linked via permissions. This instantly maps out the blast radius in a single, high-performance GQL query."
+    },
+    {
+      "id": "q2_lateral_movement",
+      "title": "Lateral Network Movement Paths",
+      "description": "Trace network communication paths from a compromised resource to identify downstream systems at risk.",
+      "gql": "GRAPH SecurityGraph\nMATCH (src:Resource {name: 'public-web-server'})-[:NetworkFlow*1..3]->(dest:Resource)\nRETURN src.name AS start_point, dest.name AS system_at_risk, dest.type AS system_type",
+      "talk_track": "Security teams need to know where an attacker can pivot. By using Spanner Graph's variable-length path matching, we trace up to 3 network hops from the compromised host to show lateral movement paths — all at Cloud scale with millisecond latency."
+    },
+    {
+      "id": "q3_end_to_end_threat",
+      "title": "End-to-End Cyber Threat Vector",
+      "description": "Correlate human access with network connectivity to trace a full path from user to sensitive databases.",
+      "gql": "GRAPH SecurityGraph\nMATCH (a:Account)-[:AssumesRole]->(role:Role)-[:HasPermission]->(src:Resource)-[:NetworkFlow]->(dest:Resource {type: 'Database'})\nRETURN a.name AS identity, role.name AS role_name, src.name AS gateway_host, dest.name AS database_at_risk",
+      "talk_track": "This GQL query connects IAM access and network flows in a single traversal. We identify accounts that can access a gateway host that in turn talks to crown-jewel databases — letting SOC teams proactively close attack paths before exploitation."
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "graph_name": "RetailMarketingGraph",
+  "nodes": [
+    {
+      "name": "Customer",
+      "table_name": "Customers",
+      "properties": [
+        { "name": "customer_id", "type": "STRING(36)", "nullable": false },
+        { "name": "name", "type": "STRING(100)", "nullable": false },
+        { "name": "email", "type": "STRING(100)", "nullable": false },
+        { "name": "segment", "type": "STRING(50)", "nullable": false },
+        { "name": "loyalty_tier", "type": "STRING(20)", "nullable": false },
+        { "name": "signup_date", "type": "TIMESTAMP", "nullable": false }
+      ],
+      "key": ["customer_id"]
+    },
+    {
+      "name": "Product",
+      "table_name": "Products",
+      "properties": [
+        { "name": "product_id", "type": "STRING(36)", "nullable": false },
+        { "name": "name", "type": "STRING(100)", "nullable": false },
+        { "name": "category", "type": "STRING(50)", "nullable": false },
+        { "name": "brand", "type": "STRING(50)", "nullable": false },
+        { "name": "price", "type": "NUMERIC", "nullable": false }
+      ],
+      "key": ["product_id"]
+    },
+    {
+      "name": "Store",
+      "table_name": "Stores",
+      "properties": [
+        { "name": "store_id", "type": "STRING(36)", "nullable": false },
+        { "name": "name", "type": "STRING(100)", "nullable": false },
+        { "name": "city", "type": "STRING(50)", "nullable": false },
+        { "name": "state", "type": "STRING(2)", "nullable": false },
+        { "name": "zip_code", "type": "STRING(10)", "nullable": false }
+      ],
+      "key": ["store_id"]
+    }
+  ],
+  "edges": [
+    {
+      "name": "Purchased",
+      "table_name": "CustomerPurchases",
+      "properties": [
+        { "name": "customer_id", "type": "STRING(36)", "nullable": false },
+        { "name": "purchase_id", "type": "STRING(36)", "nullable": false },
+        { "name": "product_id", "type": "STRING(36)", "nullable": false },
+        { "name": "store_id", "type": "STRING(36)", "nullable": false },
+        { "name": "quantity", "type": "INT64", "nullable": false },
+        { "name": "price_paid", "type": "NUMERIC", "nullable": false },
+        { "name": "timestamp", "type": "TIMESTAMP", "nullable": false }
+      ],
+      "key": ["customer_id", "purchase_id"],
+      "source": {
+        "node_name": "Customer",
+        "key_map": { "customer_id": "customer_id" }
+      },
+      "destination": {
+        "node_name": "Product",
+        "key_map": { "product_id": "product_id" }
+      }
+    },
+    {
+      "name": "Views",
+      "table_name": "CustomerViews",
+      "properties": [
+        { "name": "customer_id", "type": "STRING(36)", "nullable": false },
+        { "name": "view_id", "type": "STRING(36)", "nullable": false },
+        { "name": "product_id", "type": "STRING(36)", "nullable": false },
+        { "name": "duration_seconds", "type": "INT64", "nullable": false },
+        { "name": "device_type", "type": "STRING(20)", "nullable": false },
+        { "name": "timestamp", "type": "TIMESTAMP", "nullable": false }
+      ],
+      "key": ["customer_id", "view_id"],
+      "source": {
+        "node_name": "Customer",
+        "key_map": { "customer_id": "customer_id" }
+      },
+      "destination": {
+        "node_name": "Product",
+        "key_map": { "product_id": "product_id" }
+      }
+    },
+    {
+      "name": "Inventory",
+      "table_name": "ProductInventory",
+      "properties": [
+        { "name": "product_id", "type": "STRING(36)", "nullable": false },
+        { "name": "store_id", "type": "STRING(36)", "nullable": false },
+        { "name": "quantity", "type": "INT64", "nullable": false },
+        { "name": "aisle_location", "type": "STRING(20)", "nullable": false }
+      ],
+      "key": ["product_id", "store_id"],
+      "source": {
+        "node_name": "Product",
+        "key_map": { "product_id": "product_id" }
+      },
+      "destination": {
+        "node_name": "Store",
+        "key_map": { "store_id": "store_id" }
+      }
+    },
+    {
+      "name": "PrefersStore",
+      "table_name": "CustomerPreferredStore",
+      "properties": [
+        { "name": "customer_id", "type": "STRING(36)", "nullable": false },
+        { "name": "store_id", "type": "STRING(36)", "nullable": false },
+        { "name": "assigned_at", "type": "TIMESTAMP", "nullable": false }
+      ],
+      "key": ["customer_id", "store_id"],
+      "source": {
+        "node_name": "Customer",
+        "key_map": { "customer_id": "customer_id" }
+      },
+      "destination": {
+        "node_name": "Store",
+        "key_map": { "store_id": "store_id" }
+      }
+    }
+  ],
+  "queries": [
+    {
+      "id": "q1_omnichannel_store_drive",
+      "title": "Local Store Inventory Recommendations",
+      "description": "Find products a customer viewed online that are currently in-stock at their preferred physical store, driving local foot traffic.",
+      "gql": "GRAPH RetailMarketingGraph\nMATCH (c:Customer {customer_id: 'cust-0000000'})-[:PrefersStore]->(s:Store),\n      (c)-[:Views]->(p:Product)-[inv:Inventory]->(s)\nWHERE inv.quantity > 0\nRETURN p.name AS viewed_product, s.name AS local_store, s.city AS city, inv.quantity AS stock_count, inv.aisle_location AS aisle\nLIMIT 5",
+      "talk_track": "This is the holy grail of omnichannel retail. We instantly correlate digital browsing history (Views) with physical store preferences (PrefersStore) and real-time inventory levels (Inventory) in a single declarative MATCH query. With Spanner Graph, you can trigger real-time, hyper-local push notifications like 'The item you viewed online is in-stock on Aisle 4 at your local physical store!' with sub-second latency, driving immediate foot traffic and conversion."
+    },
+    {
+      "id": "q2_collaborative_recommendation",
+      "title": "Real-Time Collaborative Recommendations",
+      "description": "Expose cross-customer buying patterns to recommend products purchased by other customers who bought the same items (Customers who bought X also bought Y).",
+      "gql": "GRAPH RetailMarketingGraph\nMATCH (c:Customer {customer_id: 'cust-0000000'})-[:Purchased]->(p:Product)<-[:Purchased]-(other:Customer)-[:Purchased]->(rec:Product)\nWHERE rec.product_id != p.product_id\n  AND NOT EXISTS { MATCH (c)-[:Purchased]->(rec) }\nRETURN DISTINCT rec.name AS recommended_product, rec.category AS category, rec.price AS price\nLIMIT 5",
+      "talk_track": "Personalized recommendation engines are typically powered by slow batch ETL pipelines. Spanner Graph allows you to execute real-time collaborative filtering directly on your live transactional database. By traversing the customer-product-customer-product path, we recommend highly relevant items at the exact moment of checkout, maximizing average order value without any processing delays."
+    },
+    {
+      "id": "q3_loyalty_cross_selling",
+      "title": "High-Value Loyalty Segment Affinity",
+      "description": "Trace cross-selling affinity for Platinum loyalty members who viewed premium products in a target category but purchased items in other categories.",
+      "gql": "GRAPH RetailMarketingGraph\nMATCH (c:Customer {loyalty_tier: 'Platinum'})-[:Views]->(p1:Product {category: 'Electronics'})-[]->(),\n      (c)-[:Purchased]->(p2:Product)\nWHERE p2.category != 'Electronics' AND p2.price > 100\nRETURN DISTINCT c.name AS customer_name, p2.name AS purchased_product, p2.category AS category, p2.price AS price\nLIMIT 5",
+      "talk_track": "Understanding segment affinity helps marketing teams design precise cross-selling campaigns. This query traces our most valuable customers (Platinum) who show digital intent in a premium category (Electronics) and correlates it with their actual purchases in other categories. Executing this on a live transaction graph allows you to adjust homepage banners and offers dynamically based on real-time buying patterns."
+    }
+  ]
+}

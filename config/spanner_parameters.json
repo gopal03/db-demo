@@ -1,0 +1,36 @@
+{
+  "project_id": "my-project-93954-gke",
+  "instance_id": "demo-instance-retail",
+  "instance_config": "regional-us-central1",
+  "database_id": "spanner-graph-demo-db-retail",
+  "node_count": 1,
+  "processing_units": 0,
+  "edition": "ENTERPRISE",
+  "demo_context": {
+    "customer_name": "Acme Retail Group",
+    "industry": "Retail",
+    "use_case": "Retail marketing",
+    "use_case_config": "config/use_cases/retail_marketing/use_case_config.json"
+  },
+  "data_config": {
+    "profile": "small",
+    "profiles": {
+      "small": {
+        "description": "Quick demo / local testing (~10MB)",
+        "rows_per_table": 500
+      },
+      "medium": {
+        "description": "Customer demo / POC scale (~500MB)",
+        "rows_per_table": 50000
+      },
+      "large": {
+        "description": "Production scale demo (~5GB)",
+        "rows_per_table": 500000
+      },
+      "custom": {
+        "description": "Customer-defined custom counts",
+        "rows_per_table": 1000
+      }
+    }
+  }
+}
