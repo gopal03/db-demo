@@ -1,16 +1,16 @@
 {
   "project_id": "my-project-93954-gke",
-  "instance_id": "demo-instance-retail",
+  "instance_id": "demo-instance-*",
   "instance_config": "regional-us-central1",
-  "database_id": "spanner-graph-demo-db-retail",
+  "database_id": "spanner-graph-demo-db-*",
   "node_count": 1,
   "processing_units": 0,
   "edition": "ENTERPRISE",
   "demo_context": {
-    "customer_name": "Acme Retail Group",
-    "industry": "Retail",
-    "use_case": "Retail marketing",
-    "use_case_config": "config/use_cases/retail_marketing/use_case_config.json"
+    "customer_name": "",
+    "industry": "",
+    "use_case": "",
+    "use_case_config": "config/use_cases/*/use_case_config.json"
   },
   "data_config": {
     "profile": "small",
