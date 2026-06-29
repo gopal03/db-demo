@@ -1,0 +1,76 @@
+{
+  "entries": [
+    {
+      "path": "skills/spanner/step1_schema"
+    },
+    {
+      "path": "skills/spanner/step2_data"
+    },
+    {
+      "path": "skills/spanner/step3_load"
+    },
+    {
+      "path": "skills/spanner/step4_query"
+    },
+    {
+      "path": "skills/bigtable/step1_schema"
+    },
+    {
+      "path": "skills/bigtable/step2_data"
+    },
+    {
+      "path": "skills/bigtable/step3_load"
+    },
+    {
+      "path": "skills/bigtable/step4_query"
+    },
+    {
+      "path": "skills/cloudsql/step1_schema"
+    },
+    {
+      "path": "skills/cloudsql/step2_data"
+    },
+    {
+      "path": "skills/cloudsql/step3_load"
+    },
+    {
+      "path": "skills/cloudsql/step4_query"
+    },
+    {
+      "path": "skills/memorystore/step1_schema"
+    },
+    {
+      "path": "skills/memorystore/step2_data"
+    },
+    {
+      "path": "skills/memorystore/step3_load"
+    },
+    {
+      "path": "skills/memorystore/step4_query"
+    },
+    {
+      "path": "skills/firestore/step1_schema"
+    },
+    {
+      "path": "skills/firestore/step2_data"
+    },
+    {
+      "path": "skills/firestore/step3_load"
+    },
+    {
+      "path": "skills/firestore/step4_query"
+    },
+    {
+      "path": "skills/alloydb/step1_schema"
+    },
+    {
+      "path": "skills/alloydb/step2_data"
+    },
+    {
+      "path": "skills/alloydb/step3_load"
+    },
+    {
+      "path": "skills/alloydb/step4_query"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "project_id": "my-project-93954-gke",
+  "target_database": "spanner",
+  "demo_context": {
+    "customer_name": "Acme Retail Group",
+    "industry": "Retail",
+    "use_case": "Retail Marketing",
+    "use_case_config": "config/use_cases/retail_marketing/use_case_config.json"
+  },
+  "data_config": {
+    "profile": "small",
+    "profiles": {
+      "small": {
+        "description": "Quick demo / local testing (~10MB)",
+        "rows_per_table": 500
+      },
+      "medium": {
+        "description": "Customer demo / POC scale (~500MB)",
+        "rows_per_table": 50000
+      },
+      "large": {
+        "description": "Production scale demo (~5GB)",
+        "rows_per_table": 500000
+      },
+      "custom": {
+        "description": "Customer-defined custom counts",
+        "rows_per_table": 1000
+      }
+    }
+  },
+  "database_configs": {
+    "spanner": {
+      "instance_id": "demo-instance-retail",
+      "instance_config": "regional-us-central1",
+      "database_id": "spanner-graph-demo-db-retail",
+      "node_count": 1,
+      "processing_units": 0,
+      "edition": "ENTERPRISE"
+    },
+    "alloydb": {
+      "cluster_id": "demo-cluster-retail",
+      "instance_id": "demo-instance-retail",
+      "region": "us-central1",
+      "database_id": "alloydb-demo-db-retail"
+    },
+    "cloudsql": {
+      "instance_id": "demo-instance-retail",
+      "region": "us-central1",
+      "database_id": "cloudsql-demo-db-retail",
+      "database_version": "POSTGRES_15",
+      "tier": "db-custom-2-7680"
+    },
+    "bigtable": {
+      "instance_id": "demo-instance-retail",
+      "cluster_id": "demo-cluster-retail",
+      "zone": "us-central1-a",
+      "num_nodes": 1,
+      "storage_type": "SSD"
+    },
+    "firestore": {
+      "database_id": "(default)",
+      "location_id": "nam5"
+    },
+    "memorystore": {
+      "instance_id": "demo-instance-retail",
+      "region": "us-central1",
+      "tier": "BASIC",
+      "memory_size_gb": 1
+    }
+  }
+}
