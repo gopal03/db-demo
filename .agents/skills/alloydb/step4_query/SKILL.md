@@ -1,17 +1,36 @@
 ---
 name: alloydb_step4_query
-description: AlloyDB - Execute demo queries and present value-driven talk tracks.
+description: "Execute SQL queries against AlloyDB, verify Columnar Engine execution, and generate a customer talk track using a static script."
 ---
 
-# AlloyDB Step4 Query
 
-This skill handles the step4 query phase for AlloyDB demos.
+## 1. Core AlloyDB Query Best Practices
 
-## Input Requirements
-* TBD: Define expected input parameters and configurations.
+AlloyDB combines relational capability with columnar analytics. For the best demo experience, it is vital to show how the Columnar Engine accelerates queries.
 
-## Expected Outputs
-* TBD: Define generated files or provisioning results.
+### A. Verifying Columnar Execution
+* Standard PostgreSQL queries will automatically execute against the Columnar Engine if the optimizer determines it is faster.
+* Use `EXPLAIN` on a query and verify that the plan contains a **`Custom Scan (columnar)`** node.
 
-## Instructions
-1. TBD: Add step-by-step guidance for the agent.
+---
+
+## 2. Input Requirements
+The agent expects:
+1. **Demo Parameters** (`demo_parameters.json`): Connection details.
+2. **Queries Configuration** (`queries.json`): Housed inside the use case directory (e.g. `config/use_cases/<usecase>/alloydb/queries.json`).
+
+---
+
+## 3. Expected Outputs
+The skill must produce:
+1. **`talktrack.md`**: A customer guide explaining the business scenario, SQL code, timing metrics, and execution plans.
+
+---
+
+## 4. How to Execute
+
+Run the static query runner script from the command line:
+
+```bash
+python3 .agents/skills/alloydb/step4_query/scripts/run_query.py
+```

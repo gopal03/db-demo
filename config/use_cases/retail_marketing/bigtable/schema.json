@@ -1,0 +1,42 @@
+{
+  "tables": {
+    "customers": {
+      "column_families": {
+        "d": {
+          "gc_policy": "maxversions=1"
+        },
+        "p": {
+          "gc_policy": "maxversions=1"
+        }
+      }
+    },
+    "products": {
+      "column_families": {
+        "d": {
+          "gc_policy": "maxversions=1"
+        }
+      }
+    },
+    "stores": {
+      "column_families": {
+        "d": {
+          "gc_policy": "maxversions=1"
+        }
+      }
+    },
+    "inventory": {
+      "column_families": {
+        "d": {
+          "gc_policy": "maxversions=1"
+        }
+      }
+    },
+    "customer_events": {
+      "column_families": {
+        "e": {
+          "gc_policy": "maxversions=5"
+        }
+      }
+    }
+  }
+}

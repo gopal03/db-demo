@@ -1,17 +1,39 @@
 ---
 name: firestore_step3_load
-description: Firestore - Provision database instances and load the generated mock data.
+description: "Bulk load mock document structures into Google Cloud Firestore using a static WriteBatch loader script."
 ---
 
-# Firestore Step3 Load
 
-This skill handles the step3 load phase for Firestore demos.
+## 1. Core Firestore Loading Best Practices
 
-## Input Requirements
-* TBD: Define expected input parameters and configurations.
+Firestore bulk loading requires careful management of batch sizes and write throughput to avoid rate limiting.
 
-## Expected Outputs
-* TBD: Define generated files or provisioning results.
+### A. Firestore Write Batches
+* You can write multiple documents in a single transaction using **`WriteBatch`**.
+* **Limit**: A single `WriteBatch` can contain a maximum of **500 operations** (creates, updates, or deletes). Exceeding this limit will cause the batch to fail.
+* **Best Practice**: Group document writes in chunks of 450 to leave a safety margin.
 
-## Instructions
-1. TBD: Add step-by-step guidance for the agent.
+---
+
+## 2. Input Requirements
+The agent expects:
+1. **Demo Parameters** (`demo_parameters.json`): Credentials and database ID.
+2. **Schema & Indexes** (`schema.json`, `firestore.indexes.json`).
+3. **Mock Data** (`dummy_data.json`).
+
+---
+
+## 3. Expected Outputs
+The skill must produce:
+1. **`run_load.sh`**: A shell script to deploy composite indexes (using `gcloud firestore indexes import`) and execute the static loader script.
+2. **`loading_report.md`**: Reporting total loaded documents and execution metrics.
+
+---
+
+## 4. How to Execute
+
+Run the static loader script from the command line:
+
+```bash
+python3 .agents/skills/firestore/step3_load/scripts/load_data.py
+```

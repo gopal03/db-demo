@@ -1,0 +1,105 @@
+{
+  "graph_name": "FraudGraph",
+  "nodes": [
+    {
+      "name": "Account",
+      "table_name": "Accounts",
+      "properties": [
+        { "name": "account_id", "type": "STRING(36)", "nullable": false },
+        { "name": "name", "type": "STRING(100)", "nullable": false },
+        { "name": "created_at", "type": "TIMESTAMP", "nullable": false },
+        { "name": "risk_score", "type": "INT64", "nullable": false }
+      ],
+      "key": ["account_id"]
+    },
+    {
+      "name": "Device",
+      "table_name": "Devices",
+      "properties": [
+        { "name": "device_id", "type": "STRING(50)", "nullable": false },
+        { "name": "device_type", "type": "STRING(50)", "nullable": false },
+        { "name": "os", "type": "STRING(50)", "nullable": false }
+      ],
+      "key": ["device_id"]
+    },
+    {
+      "name": "IPAddress",
+      "table_name": "IPAddresses",
+      "properties": [
+        { "name": "ip_address", "type": "STRING(45)", "nullable": false },
+        { "name": "country", "type": "STRING(100)", "nullable": false }
+      ],
+      "key": ["ip_address"]
+    }
+  ],
+  "edges": [
+    {
+      "name": "Transfers",
+      "table_name": "Transfers",
+      "properties": [
+        { "name": "account_id", "type": "STRING(36)", "nullable": false },
+        { "name": "transfer_id", "type": "STRING(36)", "nullable": false },
+        { "name": "dest_account_id", "type": "STRING(36)", "nullable": false },
+        { "name": "amount", "type": "NUMERIC", "nullable": false },
+        { "name": "timestamp", "type": "TIMESTAMP", "nullable": false }
+      ],
+      "key": ["account_id", "transfer_id"],
+      "source": {
+        "node_name": "Account",
+        "key_map": { "account_id": "account_id" }
+      },
+      "destination": {
+        "node_name": "Account",
+        "key_map": { "dest_account_id": "account_id" }
+      }
+    },
+    {
+      "name": "UsesDevice",
+      "table_name": "UsesDevice",
+      "properties": [
+        { "name": "account_id", "type": "STRING(36)", "nullable": false },
+        { "name": "device_id", "type": "STRING(50)", "nullable": false },
+        { "name": "login_time", "type": "TIMESTAMP", "nullable": false }
+      ],
+      "key": ["account_id", "device_id", "login_time"],
+      "source": {
+        "node_name": "Account",
+        "key_map": { "account_id": "account_id" }
+      },
+      "destination": {
+        "node_name": "Device",
+        "key_map": { "device_id": "device_id" }
+      }
+    },
+    {
+      "name": "UsesIP",
+      "table_name": "UsesIP",
+      "properties": [
+        { "name": "account_id", "type": "STRING(36)", "nullable": false },
+        { "name": "ip_address", "type": "STRING(45)", "nullable": false },
+        { "name": "login_time", "type": "TIMESTAMP", "nullable": false }
+      ],
+      "key": ["account_id", "ip_address", "login_time"],
+      "source": {
+        "node_name": "Account",
+        "key_map": { "account_id": "account_id" }
+      },
+      "destination": {
+        "node_name": "IPAddress",
+        "key_map": { "ip_address": "ip_address" }
+      }
+    }
+  ],
+  "queries": [
+    {
+      "name": "Multi-Hop Transaction Ring",
+      "description": "Trace transfer paths originating from a specific target account to identify cycle routing (e.g. transfer loops).",
+      "gql": "GRAPH FraudGraph MATCH (a:Account {account_id: $start_account})-[:Transfers*1..3]->(b:Account) RETURN a.account_id AS source, b.account_id AS target"
+    },
+    {
+      "name": "Account Collateral Ring",
+      "description": "Identify different customer accounts that log in from the exact same device and IP address (shared identity fraud).",
+      "gql": "GRAPH FraudGraph MATCH (a:Account)-[:UsesDevice]->(d:Device)<-[:UsesDevice]-(b:Account) MATCH (a)-[:UsesIP]->(ip:IPAddress)<-[:UsesIP]-(b) WHERE a.account_id != b.account_id RETURN a.account_id AS source_acc, b.account_id AS target_acc, d.device_id AS shared_device, ip.ip_address AS shared_ip"
+    }
+  ]
+}

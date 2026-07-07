@@ -14,7 +14,7 @@ from google.cloud import spanner_admin_instance_v1
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".agents/skills")))
 
 # --- Configuration & Paths ---
-PARAMS_FILE = "config/spanner_parameters.json"
+PARAMS_FILE = "config/demo_parameters.json"
 
 st.set_page_config(
     layout="wide",
@@ -119,7 +119,19 @@ def load_parameters():
             }
         }
     with open(PARAMS_FILE, 'r') as f:
-        return json.load(f)
+        data = json.load(f)
+    
+    # Adapt nested demo_parameters.json to flat keys used by app.py
+    if "database_configs" in data and "spanner" in data["database_configs"]:
+        spanner_cfg = data["database_configs"]["spanner"]
+        data["instance_id"] = spanner_cfg.get("instance_id", "spanner-graph-demo-instance")
+        data["database_id"] = spanner_cfg.get("database_id", "spanner-graph-demo-db")
+    else:
+        # Fallback defaults if database_configs structure is missing
+        data["instance_id"] = data.get("instance_id", "spanner-graph-demo-instance")
+        data["database_id"] = data.get("database_id", "spanner-graph-demo-db")
+        
+    return data
 
 def save_parameters(params):
     os.makedirs(os.path.dirname(PARAMS_FILE), exist_ok=True)
@@ -133,13 +145,17 @@ def load_use_case_config(config_path):
         return json.load(f)
 
 def get_database_connection(client, instance_id, database_id):
-    instance = client.instance(instance_id)
-    if not instance.exists():
+    try:
+        instance = client.instance(instance_id)
+        if not instance.exists():
+            return None
+        database = instance.database(database_id)
+        if not database.exists():
+            return None
+        return database
+    except Exception:
+        # Suppress API and IAM auth errors, degrading gracefully to OFFLINE
         return None
-    database = instance.database(database_id)
-    if not database.exists():
-        return None
-    return database
 
 # --- Dynamic Graph Parser & Renderer (Generic Heuristic) ---
 def render_dynamic_graph(df, height="500px"):

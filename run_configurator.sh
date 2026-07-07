@@ -6,7 +6,7 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 echo -e "${GREEN}=======================================================${NC}"
-echo -e "${GREEN}      Starting Spanner Graph Universal Demo Console    ${NC}"
+echo -e "${GREEN}      Starting Database Demo Configurator Portal       ${NC}"
 echo -e "${GREEN}=======================================================${NC}"
 
 if [ ! -d ".venv" ]; then
@@ -16,8 +16,5 @@ fi
 
 source .venv/bin/activate
 
-echo "Ensuring dependencies are installed..."
-pip install -r requirements.txt --quiet
-
-echo -e "${GREEN}Launching Streamlit App...${NC}"
-streamlit run app.py
+echo -e "${GREEN}Launching Configurator UI...${NC}"
+streamlit run configurator.py
