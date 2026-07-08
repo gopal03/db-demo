@@ -8,13 +8,13 @@ Rather than being locked to a fixed set of demos, this engine acts as a **plugga
 
 ## 1. Supported Databases & Workloads
 
-The framework includes pre-built modules for Google Cloud's core database portfolio:
-* **Spanner:** Relational schemas and graph traversals (**Spanner Graph**).
-* **AlloyDB for PostgreSQL:** Vector embeddings search (pgvector) and **Columnar Engine** aggregations.
-* **Cloud SQL (PostgreSQL/MySQL):** Primary-to-replica latency checks and ledger transactions.
-* **Bigtable:** High-write time-series and IoT metrics.
-* **Memorystore (Redis):** Cache performance comparisons.
-* **Firestore:** Native document catalog search.
+The framework is designed to demonstrate any database capabilities—such as graph queries, vector similarity search, relational transactions, high-throughput time-series ingestion, and cache acceleration—across any target schema. The pre-packaged use cases are provided as out-of-the-box examples:
+* **Spanner:** Relational workloads and graph traversals (e.g. Spanner Graph).
+* **AlloyDB for PostgreSQL:** Vector similarity search (pgvector), hybrid transactional/analytical processing (HTAP), and Columnar Engine analytics.
+* **Cloud SQL (PostgreSQL/MySQL):** Transactional ledgers and replication performance.
+* **Bigtable:** High-throughput time-series streams and IoT telemetry metrics.
+* **Memorystore (Redis):** In-memory cache hit performance and session stores.
+* **Firestore:** Hierarchical document databases and search catalogs.
 
 ---
 
@@ -56,7 +56,7 @@ Once configured, the portal will automatically synthesize mock records matching 
 The demo engine is designed to run locally on your machine, leveraging your private Google Cloud credentials.
 
 ### Step 4.1: Clone the Repository
-Clone the codebase to your local directory (we recommend outside `~/Downloads` due to macOS Santa security policy):
+Clone the codebase to your local directory 
 ```bash
 git clone https://github.com/gopal03/db-demo.git
 cd db-demo
@@ -92,13 +92,11 @@ The portal will open in your browser automatically at `http://localhost:8504`.
 2. **Provision Infrastructure (Terraform):** Click **🚀 Provision Infrastructure** in the panel to spin up your databases.
 3. **Ingest & Seed:** Click **📥 Seed & Plan Dashboard** to compile SQL DDL schemas, generate thousands of mock records, and seed the database tables.
 4. **Present:** Start the Demo Explorer Dashboard using Streamlit (`streamlit run app.py` on port `8501`) and share your screen to present queries and talk tracks to the customer.
-5. **Teardown:** When done, click **🗑️ Destroy Infrastructure** in the Configurator to delete GCP resources and prevent Argolis cost leaks.
+5. **Teardown:** When done, click **🗑️ Destroy Infrastructure** in the Configurator to delete GCP resources and prevent unnecessary sandbox costs.
 
 ---
 
-## 6. Troubleshooting (macOS Santa Block)
-
-On Google corporate laptops, macOS **Santa** security policy blocks the execution of downloaded binaries (like the Terraform Google provider) when executed from quarantined paths or inside sandboxed terminals.
+## 6. Troubleshooting 
 
 If your configurator console displays a `Failed to load plugin schemas` error during provisioning:
 1. Open your host terminal (outside the IDE sandboxed terminal).

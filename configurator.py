@@ -298,7 +298,7 @@ def prepare_tf_vars(params, target_db):
 
 # --- Header ---
 st.markdown('<div class="gradient-header">Database Demo Configurator</div>', unsafe_allow_html=True)
-st.markdown("Configure and interactively launch database demos in your sandbox Argolis project.")
+st.markdown("Configure and interactively launch database demos in your sandbox GCP project.")
 st.markdown("---")
 
 # --- Top Section: Inputs ---
@@ -309,8 +309,8 @@ with col1:
         st.subheader("1. General Configuration")
         
         argolis_project = st.text_input(
-            "Argolis Project ID",
-            placeholder="e.g., gopal-argolis-sandbox",
+            "GCP Project ID",
+            placeholder="e.g., gopal-sandbox-project",
             help="The sandbox GCP project where database resources will be deployed."
         )
         
@@ -774,4 +774,4 @@ if argolis_project and customer_name and is_auth_ok:
                         st.error(f"Terraform directory '{tf_dir}' not found.")
 else:
     st.markdown("---")
-    st.info("💡 **Please provide an 'Argolis Project ID' and 'Customer Name' to generate configurations and unlock the interactive deployment panel.**")
+    st.info("💡 **Please provide a 'GCP Project ID' and 'Customer Name' to generate configurations and unlock the interactive deployment panel.**")
