@@ -120,8 +120,20 @@ def load_parameters():
         }
     with open(PARAMS_FILE, 'r') as f:
         data = json.load(f)
+        
+    # Check if this active use case has a customized active_parameters.json file
+    use_case_config_path = data.get("demo_context", {}).get("use_case_config")
+    if use_case_config_path:
+        use_case_dir = os.path.dirname(use_case_config_path)
+        active_params_path = os.path.join(use_case_dir, "active_parameters.json")
+        if os.path.exists(active_params_path):
+            try:
+                with open(active_params_path, 'r') as f:
+                    data = json.load(f)
+            except Exception:
+                pass
     
-    # Adapt nested demo_parameters.json to flat keys used by app.py
+    # Adapt nested demo_parameters.json / active_parameters.json to flat keys used by app.py
     if "database_configs" in data and "spanner" in data["database_configs"]:
         spanner_cfg = data["database_configs"]["spanner"]
         data["instance_id"] = spanner_cfg.get("instance_id", "spanner-graph-demo-instance")

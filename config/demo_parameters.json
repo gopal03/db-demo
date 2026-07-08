@@ -1,14 +1,14 @@
 {
   "project_id": "my-project-93954-gke",
-  "target_database": "spanner",
+  "target_database": "alloydb",
   "demo_context": {
-    "customer_name": "Acme Retail Group",
-    "industry": "Retail",
-    "use_case": "Retail Marketing",
-    "use_case_config": "config/use_cases/retail_marketing/use_case_config.json"
+    "customer_name": "Acme Gaming",
+    "industry": "Gaming",
+    "use_case": "Gaming Analytics",
+    "use_case_config": "config/use_cases/gaming_analytics/use_case_config.json"
   },
   "data_config": {
-    "profile": "small",
+    "profile": "medium",
     "profiles": {
       "small": {
         "description": "Quick demo / local testing (~10MB)",
@@ -38,15 +38,15 @@
       "edition": "ENTERPRISE"
     },
     "alloydb": {
-      "cluster_id": "demo-cluster-retail",
-      "instance_id": "demo-instance-retail",
+      "cluster_id": "alloydb-cluster-gamecraft",
+      "instance_id": "alloydb-primary-gamecraft",
       "region": "us-central1",
-      "database_id": "alloydb-demo-db-retail"
+      "database_id": "postgres"
     },
     "cloudsql": {
-      "instance_id": "demo-instance-retail",
+      "instance_id": "demo-instance-gaming",
       "region": "us-central1",
-      "database_id": "cloudsql-demo-db-retail",
+      "database_id": "cloudsql-demo-db-gaming",
       "database_version": "POSTGRES_15",
       "tier": "db-custom-2-7680"
     },

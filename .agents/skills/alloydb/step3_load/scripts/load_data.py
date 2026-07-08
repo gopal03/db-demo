@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import argparse
 import time
 import datetime
 import psycopg2
@@ -17,20 +18,20 @@ def get_insert_query(table_name, record):
     return query
 
 def main():
-    params_path = "config/demo_parameters.json"
+    parser = argparse.ArgumentParser(description="AlloyDB PostgreSQL Data Loader.")
+    parser.add_argument('--parameters', default='config/demo_parameters.json', help='Path to parameters config file')
+    args = parser.parse_args()
+    
+    params_path = args.parameters
     if not os.path.exists(params_path):
         print(f"Error: Parameter file {params_path} not found.")
         sys.exit(1)
         
     params = load_json(params_path)
     target_database = params.get("target_database", "alloydb")
-    use_case = params.get("demo_context", {}).get("use_case")
     
-    if not use_case:
-        print("Error: Active use case not specified in demo_parameters.json.")
-        sys.exit(1)
-        
-    use_case_dir = os.path.join("config/use_cases", use_case.lower().replace(" ", "_"))
+    # Resolve use case directory relative to parameter file
+    use_case_dir = os.path.dirname(params_path)
     
     db_config = params.get("database_configs", {}).get(target_database, {})
     host = db_config.get("host", "127.0.0.1")

@@ -1,0 +1,79 @@
+{
+  "graph_name": "GamingTelemetryGraph",
+  "nodes": [
+    {
+      "name": "Player",
+      "table_name": "Players",
+      "key": ["player_id"],
+      "properties": [
+        {"name": "player_id", "type": "STRING(36)", "nullable": false},
+        {"name": "username", "type": "STRING(100)", "nullable": false},
+        {"name": "level_group", "type": "STRING(50)", "nullable": false},
+        {"name": "region", "type": "STRING(50)", "nullable": false},
+        {"name": "signup_date", "type": "TIMESTAMP", "nullable": false}
+      ]
+    },
+    {
+      "name": "Session",
+      "table_name": "Sessions",
+      "key": ["session_id"],
+      "properties": [
+        {"name": "session_id", "type": "STRING(36)", "nullable": false},
+        {"name": "game_mode", "type": "STRING(50)", "nullable": false},
+        {"name": "server_region", "type": "STRING(50)", "nullable": false},
+        {"name": "start_time", "type": "TIMESTAMP", "nullable": false},
+        {"name": "end_time", "type": "TIMESTAMP", "nullable": true}
+      ]
+    },
+    {
+      "name": "TelemetryEvent",
+      "table_name": "TelemetryEvents",
+      "key": ["event_id"],
+      "properties": [
+        {"name": "event_id", "type": "STRING(36)", "nullable": false},
+        {"name": "player_id", "type": "STRING(36)", "nullable": false},
+        {"name": "session_id", "type": "STRING(36)", "nullable": false},
+        {"name": "event_type", "type": "STRING(50)", "nullable": false},
+        {"name": "score", "type": "INT64", "nullable": false},
+        {"name": "latency_ms", "type": "INT64", "nullable": false},
+        {"name": "timestamp", "type": "TIMESTAMP", "nullable": false}
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "name": "PlayedIn",
+      "table_name": "PlayerPlayedSession",
+      "key": ["player_id", "session_id"],
+      "source": {
+        "node_name": "Player",
+        "key_map": {"player_id": "player_id"}
+      },
+      "destination": {
+        "node_name": "Session",
+        "key_map": {"session_id": "session_id"}
+      },
+      "properties": [
+        {"name": "player_id", "type": "STRING(36)", "nullable": false},
+        {"name": "session_id", "type": "STRING(36)", "nullable": false},
+        {"name": "joined_at", "type": "TIMESTAMP", "nullable": false}
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "id": "q1_gameplay_aggregates",
+      "title": "Gameplay Aggregate Analytics",
+      "description": "Scan telemetry logs to calculate average latency, total event counts, and score metrics grouped by player level group and game mode.",
+      "sql": "SELECT p.level_group, s.game_mode, COUNT(*) as total_events, AVG(t.score) as avg_score, AVG(t.latency_ms) as avg_latency FROM TelemetryEvents t JOIN Players p ON t.player_id = p.player_id JOIN Sessions s ON t.session_id = s.session_id GROUP BY p.level_group, s.game_mode LIMIT 20;",
+      "talk_track": "This heavy aggregation query scans and joins player segments, session details, and millions of telemetry event rows. On standard relational engines, this triggers slow index scans or table scans. With AlloyDB's Columnar Engine, the query is vectorized and processed in-memory in milliseconds, demonstrating massive acceleration for gaming analytics."
+    },
+    {
+      "id": "q2_latency_anomalies",
+      "title": "Latency Anomaly Analysis",
+      "description": "Identify regions experiencing latency spikes by aggregating events from the last 30 days.",
+      "sql": "SELECT s.server_region, COUNT(*) as event_count, MAX(t.latency_ms) as max_latency, AVG(t.latency_ms) as avg_latency FROM TelemetryEvents t JOIN Sessions s ON t.session_id = s.session_id GROUP BY s.server_region LIMIT 20;",
+      "talk_track": "Game developers monitor real-time QoS. This query scans the telemetry table to group latency stats by server region. AlloyDB's Columnar engine enables live dashboards to display QoS telemetry instantly, allowing operational teams to catch routing issues immediately."
+    }
+  ]
+}

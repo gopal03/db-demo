@@ -11,6 +11,6 @@ temp_graph.html
 terraform.tfvars.json
 
 # Ignore use-case specific parameters containing CE sandbox credentials
-**/use_cases/**/demo_parameters.json
+**/use_cases/**/active_parameters.json
 
 

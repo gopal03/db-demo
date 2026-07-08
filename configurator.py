@@ -398,12 +398,13 @@ if argolis_project and customer_name and is_auth_ok:
         ("retail", "bigtable"): "config/use_cases/retail_marketing/bigtable/use_case_config.json",
         ("financial services", "spanner"): "config/use_cases/financial_services_antimoney_laundering/use_case_config.json",
         ("cybersecurity", "spanner"): "config/use_cases/cybersecurity_fraud_detection/spanner/use_case_config.json",
+        ("gaming", "alloydb"): "config/use_cases/gaming_analytics/use_case_config.json",
     }
     selected_key = (industry.lower(), product.lower())
     use_case_config_path = config_mappings.get(selected_key, "config/use_cases/retail_marketing/use_case_config.json")
     
     use_case_dir = os.path.dirname(use_case_config_path) if use_case_config_path else "config"
-    use_case_params_path = os.path.join(use_case_dir, "demo_parameters.json")
+    use_case_params_path = os.path.join(use_case_dir, "active_parameters.json")
     
     # --- Persistence Logic: Load existing parameters for this specific use-case if present ---
     # Otherwise, start with a fresh template copy
@@ -668,13 +669,13 @@ if argolis_project and customer_name and is_auth_ok:
     with out_col1:
         st.markdown("### 3. Generated Configurations")
         with st.container(border=True):
-            st.subheader("`demo_parameters.json` Preview")
+            st.subheader("`active_parameters.json` Preview")
             st.code(json_str, language="json")
             
             st.download_button(
-                label="📥 Download demo_parameters.json",
+                label="📥 Download active_parameters.json",
                 data=json_str,
-                file_name="demo_parameters.json",
+                file_name="active_parameters.json",
                 mime="application/json"
             )
             
