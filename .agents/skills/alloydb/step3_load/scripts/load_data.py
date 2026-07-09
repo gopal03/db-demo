@@ -37,7 +37,7 @@ def main():
     host = db_config.get("host", "127.0.0.1")
     port = db_config.get("port", 5432)
     user = db_config.get("user", "postgres")
-    password = db_config.get("password", "postgres")
+    password = db_config.get("password", "alloydb_password_123")
     database_id = db_config.get("database_id", "postgres")
     
     data_file = os.path.join(use_case_dir, f"{target_database}/dummy_data.json")
@@ -56,7 +56,8 @@ def main():
             port=port,
             user=user,
             password=password,
-            database=database_id
+            database=database_id,
+            sslmode="require"
         )
         conn.autocommit = False
     except Exception as e:
