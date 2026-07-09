@@ -32,6 +32,15 @@ cp /root/.local/bin/uv /usr/local/bin/uv
 chmod 755 /usr/local/bin/uv
 rm -rf /root/.local/bin
 
+# 5. Install Terraform
+cd /tmp
+curl -LO https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
+apt-get install -y unzip
+unzip terraform_1.5.7_linux_amd64.zip
+mv terraform /usr/local/bin/
+chmod +x /usr/local/bin/terraform
+rm -f terraform_1.5.7_linux_amd64.zip
+
 # 5. Clean up old snap gcloud and install the latest google-cloud-sdk
 if snap list | grep -q google-cloud-cli; then
   snap remove google-cloud-cli || true
