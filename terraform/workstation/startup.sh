@@ -39,17 +39,17 @@ export PATH=$${PATH}:/opt/google-cloud-sdk/bin
 gcloud components install cbt bq -q
 
 # 6. Clone the repository and setup local requirements
-cd /home/ubuntu
-git clone ${github_repo_url} db-demo
+mkdir -p /opt/db-demo
+git clone ${github_repo_url} /opt/db-demo
 
-cd db-demo
+cd /opt/db-demo
 # Set up environment using uv
 /usr/local/bin/uv venv .venv
 source .venv/bin/activate
 /usr/local/bin/uv pip install -r requirements.txt
 
-# 7. Correct permissions so 'ubuntu' user has ownership
-chown -R ubuntu:ubuntu /home/ubuntu/db-demo
+# 7. Correct permissions so all users can execute/write in the shared folder
+chmod -R 777 /opt/db-demo
 chown -R ubuntu:ubuntu /opt/google-cloud-sdk
 
 echo "=== Workstation Setup Complete ==="
