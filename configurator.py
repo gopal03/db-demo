@@ -740,7 +740,11 @@ if argolis_project and customer_name and is_auth_ok:
                     schema_gen_script = f".agents/skills/{product}/step1_schema/scripts/generate_schema.py"
                     if os.path.exists(schema_gen_script):
                         ingest_console.info("Step 1: Running Schema DDL Generator...")
-                        cmd = f"python3 {schema_gen_script} --parameters {use_case_params_path}"
+                        config_path = os.path.join(use_case_dir, "use_case_config.json")
+                        schema_path = os.path.join(use_case_dir, "schema.sql")
+                        indexes_path = os.path.join(use_case_dir, "indexes.sql")
+                        columnar_path = os.path.join(use_case_dir, "columnar_config.sql")
+                        cmd = f"python3 {schema_gen_script} --config {config_path} --output-schema {schema_path} --output-indexes {indexes_path} --alloydb-columnar {columnar_path}"
                         rc = run_command_live(cmd, ".", ingest_console)
                         if rc != 0:
                             st.error(f"❌ Schema DDL generation failed (code {rc})")
@@ -751,7 +755,9 @@ if argolis_project and customer_name and is_auth_ok:
                         data_gen_script = f".agents/skills/{product}/step2_data/scripts/generate_data.py"
                         if os.path.exists(data_gen_script):
                             ingest_console.info("Step 2: Generating Mock Data simulation...")
-                            cmd = f"python3 {data_gen_script} --parameters {use_case_params_path}"
+                            config_path = os.path.join(use_case_dir, "use_case_config.json")
+                            output_data_path = os.path.join(use_case_dir, "dummy_data.json")
+                            cmd = f"python3 {data_gen_script} --config {config_path} --parameters {use_case_params_path} --output {output_data_path}"
                             rc = run_command_live(cmd, ".", ingest_console)
                             if rc != 0:
                                 st.error(f"❌ Mock Data simulation failed (code {rc})")
@@ -762,7 +768,7 @@ if argolis_project and customer_name and is_auth_ok:
                         loader_script = f".agents/skills/{product}/step3_load/scripts/load_data.py"
                         if os.path.exists(loader_script):
                             ingest_console.info("Step 3: Uploading schema & seeding records...")
-                            cmd = f"python3 {loader_script} --parameters {use_case_params_path} --recreate"
+                            cmd = f"python3 {loader_script} --parameters {use_case_params_path}"
                             rc = run_command_live(cmd, ".", ingest_console)
                             if rc != 0:
                                 st.error(f"❌ Database ingestion failed (code {rc})")
