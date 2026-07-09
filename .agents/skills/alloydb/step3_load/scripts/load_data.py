@@ -49,28 +49,6 @@ def main():
         
     data = load_json(data_file)
     
-    # Ensure target database exists by checking against default postgres database
-    try:
-        sys_conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            database="postgres",
-            sslmode="require"
-        )
-        sys_conn.autocommit = True
-        with sys_conn.cursor() as sys_cur:
-            sys_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database_id}'")
-            exists = sys_cur.fetchone()
-            if not exists:
-                print(f"Database '{database_id}' does not exist. Creating it...")
-                sys_cur.execute(f'CREATE DATABASE "{database_id}"')
-                print(f"Database '{database_id}' created successfully!")
-        sys_conn.close()
-    except Exception as e:
-        print(f"Warning: Failed to check/create database (ignoring if already exists): {e}")
-
     print(f"Connecting to {target_database.upper()} at {host}:{port} (db: {database_id})...")
     try:
         conn = psycopg2.connect(
@@ -82,6 +60,41 @@ def main():
             sslmode="require"
         )
         conn.autocommit = False
+    except psycopg2.OperationalError as e:
+        err_msg = str(e)
+        if "does not exist" in err_msg:
+            print(f"Database '{database_id}' does not exist. Creating it dynamically...")
+            try:
+                sys_conn = psycopg2.connect(
+                    host=host,
+                    port=port,
+                    user=user,
+                    password=password,
+                    database="postgres",
+                    sslmode="require"
+                )
+                sys_conn.autocommit = True
+                with sys_conn.cursor() as sys_cur:
+                    sys_cur.execute(f'CREATE DATABASE "{database_id}"')
+                sys_conn.close()
+                print(f"Database '{database_id}' created successfully. Reconnecting...")
+                
+                # Retry main connection
+                conn = psycopg2.connect(
+                    host=host,
+                    port=port,
+                    user=user,
+                    password=password,
+                    database=database_id,
+                    sslmode="require"
+                )
+                conn.autocommit = False
+            except Exception as create_err:
+                print(f"Failed to create database '{database_id}': {create_err}")
+                sys.exit(1)
+        else:
+            print(f"Error connecting to database: {e}")
+            sys.exit(1)
     except Exception as e:
         print(f"Error connecting to database: {e}")
         sys.exit(1)
