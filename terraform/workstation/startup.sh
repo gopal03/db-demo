@@ -7,7 +7,7 @@ echo "=== Starting Workstation Setup ==="
 echo "# Lab specific ENV vars" >> /etc/bash.bashrc
 echo "export GOOGLE_CLOUD_PROJECT=${project_id}" >> /etc/bash.bashrc
 echo "export GOOGLE_CLOUD_LOCATION=${region}" >> /etc/bash.bashrc
-echo "export PATH=\${PATH}:/opt/google-cloud-sdk/bin" >> /etc/bash.bashrc
+echo "export PATH=\$\${PATH}:/opt/google-cloud-sdk/bin" >> /etc/bash.bashrc
 
 # 2. Increase open files limit for benchmark throughput
 echo "# Increase open files for running benchmarks" >> /etc/security/limits.conf
@@ -35,7 +35,7 @@ mkdir -p /opt
 tar -xf google-cloud-cli-linux-x86_64.tar.gz -C /opt
 /opt/google-cloud-sdk/install.sh --quiet --path-update true
 
-export PATH=${PATH}:/opt/google-cloud-sdk/bin
+export PATH=$${PATH}:/opt/google-cloud-sdk/bin
 gcloud components install cbt bq -q
 
 # 6. Clone the repository and setup local requirements
