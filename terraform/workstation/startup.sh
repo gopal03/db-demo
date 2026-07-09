@@ -16,7 +16,7 @@ echo "* hard nofile 65535" >> /etc/security/limits.conf
 
 # 3. Install packages
 apt-get update
-apt-get install -y make btop golang-go python3-pip python3-venv git python3-dev libpq-dev curl
+apt-get install -y git curl
 
 # 4. Install UV
 curl -LsSf https://astral.sh/uv/install.sh | sh
