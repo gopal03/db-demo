@@ -3,6 +3,14 @@ set -e
 
 echo "=== Starting Workstation Setup ==="
 
+# Wait for internet connectivity (DNS and routing) to establish
+echo "Waiting for internet connectivity..."
+until curl -sSf https://www.google.com > /dev/null 2>&1; do
+  echo "Network not ready yet, sleeping 3 seconds..."
+  sleep 3
+done
+echo "Internet connectivity established!"
+
 # 1. Set environment variables globally for all bash sessions
 echo "# Lab specific ENV vars" >> /etc/bash.bashrc
 echo "export GOOGLE_CLOUD_PROJECT=${project_id}" >> /etc/bash.bashrc

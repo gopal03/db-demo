@@ -13,7 +13,7 @@ provider "google" {
   region  = var.region
 }
 
-# Provision the GCE Workstation VM using the project's default service account
+# 1. Provision the GCE Workstation VM (Private-only, no external public IP)
 resource "google_compute_instance" "workstation_vm" {
   name         = var.vm_name
   machine_type = var.machine_type
@@ -31,6 +31,7 @@ resource "google_compute_instance" "workstation_vm" {
   network_interface {
     network    = var.network_name
     subnetwork = var.subnet_name
+    # No access_config block = No public IP address allocated. Only reachable via IAP.
   }
 
   metadata_startup_script = templatefile("${path.module}/startup.sh", {
@@ -43,6 +44,22 @@ resource "google_compute_instance" "workstation_vm" {
   service_account {
     scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
+}
+
+# 2. Create a Cloud Router in the target network/region
+resource "google_compute_router" "router" {
+  name    = "${var.vm_name}-router"
+  network = var.network_name
+  region  = var.region
+}
+
+# 3. Create a Cloud NAT Gateway attached to the Router
+resource "google_compute_router_nat" "nat" {
+  name                               = "${var.vm_name}-nat"
+  router                             = google_compute_router.router.name
+  region                             = google_compute_router.router.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 }
 
 # Outputs to help connection
