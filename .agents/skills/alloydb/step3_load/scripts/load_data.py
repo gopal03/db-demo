@@ -49,6 +49,28 @@ def main():
         
     data = load_json(data_file)
     
+    # Ensure target database exists by checking against default postgres database
+    try:
+        sys_conn = psycopg2.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database="postgres",
+            sslmode="require"
+        )
+        sys_conn.autocommit = True
+        with sys_conn.cursor() as sys_cur:
+            sys_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database_id}'")
+            exists = sys_cur.fetchone()
+            if not exists:
+                print(f"Database '{database_id}' does not exist. Creating it...")
+                sys_cur.execute(f'CREATE DATABASE "{database_id}"')
+                print(f"Database '{database_id}' created successfully!")
+        sys_conn.close()
+    except Exception as e:
+        print(f"Warning: Failed to check/create database (ignoring if already exists): {e}")
+
     print(f"Connecting to {target_database.upper()} at {host}:{port} (db: {database_id})...")
     try:
         conn = psycopg2.connect(
