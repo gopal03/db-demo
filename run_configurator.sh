@@ -9,12 +9,23 @@ echo -e "${GREEN}=======================================================${NC}"
 echo -e "${GREEN}      Starting Database Demo Configurator Portal       ${NC}"
 echo -e "${GREEN}=======================================================${NC}"
 
-if [ ! -d ".venv" ]; then
-    echo "Creating python virtual environment..."
-    python3 -m venv .venv
+if command -v uv &> /dev/null; then
+    if [ ! -d ".venv" ]; then
+        echo "Creating virtual environment using uv..."
+        uv venv .venv
+    fi
+    source .venv/bin/activate
+    echo "Verifying dependencies with uv..."
+    uv pip install -r requirements.txt
+else
+    if [ ! -d ".venv" ]; then
+        echo "Creating virtual environment using standard python..."
+        python3 -m venv .venv
+    fi
+    source .venv/bin/activate
+    echo "Verifying dependencies with pip..."
+    pip install -r requirements.txt
 fi
-
-source .venv/bin/activate
 
 echo -e "${GREEN}Launching Configurator UI...${NC}"
 streamlit run configurator.py

@@ -51,54 +51,84 @@ Once configured, the portal will automatically synthesize mock records matching 
 
 ---
 
-## 4. Local Machine Setup & Pre-requisites
+## 4. Setup & Deployment Options
 
-The demo engine is designed to run locally on your machine, leveraging your private Google Cloud credentials.
+You can run this demo framework in one of two ways:
 
-### Step 4.1: Clone the Repository
-Clone the codebase to your local directory 
+### Option A: Dedicated GCE Workstation VM (Recommended)
+This approach runs the entire database framework inside a private Google Compute Engine VM. It is highly recommended because it:
+* Bypasses all local corporate macOS Santa/Gatekeeper security blocks.
+* Configures implicit metadata service account authentication (no credential files needed).
+* Accesses AlloyDB/Cloud SQL instances directly using private VPC IPs (no public endpoints needed).
+* Pre-installs `uv`, `golang`, and Google Cloud CLI components.
+
+#### Step 1: Provision the Workstation VM (from local terminal)
+```bash
+cd terraform/workstation
+terraform init
+terraform apply -auto-approve
+```
+*This outputs a custom `ssh_connection_command` to connect to your workstation VM.*
+
+#### Step 2: Connect and Tunnel Streamlit Ports
+Run the SSH connection output in your terminal. This establishes a secure tunnel and forwards ports 8501 and 8504 to your local machine:
+```bash
+gcloud compute ssh db-workstation \
+  --zone=us-central1-a \
+  --tunnel-through-iap \
+  -- -L 8501:localhost:8501 -L 8504:localhost:8504
+```
+
+#### Step 3: Launch Demos
+Open your browser and go to `http://localhost:8504` to configure and launch your database demos.
+
+---
+
+### Option B: Local Laptop Setup
+
+If you prefer to run the demo framework locally on your corporate machine:
+
+#### Step 1: Clone the Repo
 ```bash
 git clone https://github.com/gopal03/db-demo.git
 cd db-demo
 ```
 
-### Step 4.2: Initialize Python Virtual Environment
-Set up a clean environment and install dependencies:
+#### Step 2: Install UV Package Manager (Recommended)
+For 100x faster package installation and virtualenv setups, install the `uv` tool globally:
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### Step 4.3: Authenticate GCP Credentials
-Establish active credentials so that Terraform and python clients can access your sandbox project:
+#### Step 3: Launch Configurator Portal
+Run the startup script. It checks if `uv` is available to instantly install virtual environments and dependencies; if not, it automatically falls back to standard `pip`:
+```bash
+./run_configurator.sh
+```
+Open `http://localhost:8504` in your browser.
+
+#### Step 4: Authenticate GCP SDK
+Ensure your local SDK credentials are active:
 ```bash
 gcloud auth login
 gcloud auth application-default login
 ```
 
-### Step 4.4: Launch the Configurator Portal
-Run the launcher script to spin up the Streamlit configurator server:
-```bash
-./run_configurator.sh
-```
-The portal will open in your browser automatically at `http://localhost:8504`.
-
 ---
 
 ## 5. Operational Presentation Workflow
 
-1. **Configure & Plan:** In the Configurator Portal, fill out client details, choose your database product, and select your scale profile (Small: ~10MB, Medium: ~500MB, Large: ~5GB). Saving updates creates a local `active_parameters.json` config file inside the use-case directory.
-2. **Provision Infrastructure (Terraform):** Click **🚀 Provision Infrastructure** in the panel to spin up your databases.
-3. **Ingest & Seed:** Click **📥 Seed & Plan Dashboard** to compile SQL DDL schemas, generate thousands of mock records, and seed the database tables.
-4. **Present:** Start the Demo Explorer Dashboard using Streamlit (`streamlit run app.py` on port `8501`) and share your screen to present queries and talk tracks to the customer.
-5. **Teardown:** When done, click **🗑️ Destroy Infrastructure** in the Configurator to delete GCP resources and prevent unnecessary sandbox costs.
+1. **Configure & Plan:** In the Configurator Portal (`localhost:8504`), select your database product, GCP Project, and scale profile. Saving configuration generates a local `active_parameters.json` config.
+2. **Provision Infrastructure (Terraform):** Click **🚀 Provision Infrastructure** in the Configurator panel to provision database instances.
+3. **Ingest & Seed:** Click **📥 Seed & Plan Dashboard** to compile SQL DDL schemas, generate mock records, and seed the tables.
+4. **Present:** Start the Demo Explorer Dashboard (Streamlit running on port `8501`) and share your screen to present the database benchmarks and explain plans.
+5. **Teardown:** When done, click **🗑️ Destroy Infrastructure** to delete instances and prevent unnecessary sandbox costs.
 
 ---
 
-## 6. Troubleshooting 
+## 6. Local Setup Troubleshooting (macOS Gatekeeper/Santa)
 
-If your configurator console displays a `Failed to load plugin schemas` error during provisioning:
+If you are running the framework locally (Option B) and your configurator console displays a `Failed to load plugin schemas` error during provisioning:
 1. Open your host terminal (outside the IDE sandboxed terminal).
 2. Navigate to the target folder:
    ```bash
@@ -109,4 +139,4 @@ If your configurator console displays a `Failed to load plugin schemas` error du
    terraform init
    terraform apply -auto-approve
    ```
-4. Once completed, return to the Configurator Portal UI to complete the **Seed & Plan** and presentation steps.
+4. Return to the Configurator Portal UI (`localhost:8504`) to complete the **Seed & Plan** and presentation steps.
