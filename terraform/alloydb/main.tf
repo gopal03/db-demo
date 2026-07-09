@@ -20,7 +20,9 @@ data "google_compute_network" "network" {
 resource "google_alloydb_cluster" "cluster" {
   cluster_id = var.cluster_id
   location   = var.region
-  network    = data.google_compute_network.network.id
+  network_config {
+    network = data.google_compute_network.network.id
+  }
 
   initial_user {
     password = "alloydb_password_123"
