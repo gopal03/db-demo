@@ -296,6 +296,25 @@ def prepare_tf_vars(params, target_db):
         json.dump(tf_vars, f, indent=2)
     return tf_dir
 
+def get_project_id():
+    # Try environment variable first
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
+    if project:
+        return project
+    # Fallback: Try GCE Metadata server
+    try:
+        import requests
+        response = requests.get(
+            "http://metadata.google.internal/computeMetadata/v1/project/project-id",
+            headers={"Metadata-Flavor": "Google"},
+            timeout=1
+        )
+        if response.status_code == 200:
+            return response.text.strip()
+    except Exception:
+        pass
+    return ""
+
 # --- Header ---
 st.markdown('<div class="gradient-header">Database Demo Configurator</div>', unsafe_allow_html=True)
 st.markdown("Configure and interactively launch database demos in your sandbox GCP project.")
@@ -308,8 +327,10 @@ with col1:
     with st.container(border=True):
         st.subheader("1. General Configuration")
         
+        default_project = get_project_id()
         argolis_project = st.text_input(
             "GCP Project ID",
+            value=default_project,
             placeholder="e.g., gopal-sandbox-project",
             help="The sandbox GCP project where database resources will be deployed."
         )
