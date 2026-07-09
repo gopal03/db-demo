@@ -140,3 +140,37 @@ If you are running the framework locally (Option B) and your configurator consol
    terraform apply -auto-approve
    ```
 4. Return to the Configurator Portal UI (`localhost:8504`) to complete the **Seed & Plan** and presentation steps.
+
+---
+
+## 7. Workstation VM Troubleshooting
+
+### 🔑 403 Permission Denied (GCP Authorization)
+If Terraform fails with a `403 Permission Denied` (e.g., `compute.instances.create` or `compute.disks.create` forbidden):
+1. **Refresh your Application Default Credentials (ADC):** Terraform reads separate local credentials from standard gcloud logins. Refresh them by running:
+   ```bash
+   gcloud auth application-default login
+   ```
+2. **Verify active CLI account:** Make sure your active shell identity is indeed the account authorized on your target sandbox:
+   ```bash
+   gcloud config get-value account
+   ```
+
+### 🌐 Network Resource "default" Not Found
+If Terraform fails with `The referenced network resource cannot be found` (indicating your project does not have the pre-created `default` VPC):
+1. **Find an existing VPC network name:**
+   ```bash
+   gcloud compute networks list --project=YOUR_PROJECT_ID
+   ```
+2. **Find the subnet name in your region (e.g., us-central1):**
+   ```bash
+   gcloud compute subnets list --project=YOUR_PROJECT_ID --network=YOUR_NETWORK_NAME
+   ```
+3. **Deploy using network variable overrides:**
+   ```bash
+   terraform apply \
+     -var="project_id=YOUR_PROJECT_ID" \
+     -var="network_name=YOUR_NETWORK_NAME" \
+     -var="subnet_name=YOUR_SUBNET_NAME" \
+     -auto-approve
+   ```
