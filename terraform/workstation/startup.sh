@@ -55,6 +55,11 @@ tar -xf google-cloud-cli-linux-x86_64.tar.gz -C /opt
 export PATH=$${PATH}:/opt/google-cloud-sdk/bin
 gcloud components install cbt bq -q
 
+# Symlink gcloud binaries to /usr/local/bin so they are globally accessible in PATH
+ln -sf /opt/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
+ln -sf /opt/google-cloud-sdk/bin/cbt /usr/local/bin/cbt
+ln -sf /opt/google-cloud-sdk/bin/bq /usr/local/bin/bq
+
 # 6. Clone the repository and setup local requirements
 mkdir -p /opt/db-demo
 git clone ${github_repo_url} /opt/db-demo
