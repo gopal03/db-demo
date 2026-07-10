@@ -95,17 +95,18 @@ Open your browser and go to `http://localhost:8504` to configure and launch your
 6. **Teardown:** When done, click **🗑️ Destroy Infrastructure** (or use advanced settings) to terminate instances.
 
 ### Path B: Two-Script CLI Workflow
-If you prefer executing the database seeding and console launches directly inside the VM terminal:
-1. **Provision and Compile:** Run the setup script to deploy Terraform infrastructure and compile DDL schemas/data on disk:
+If you prefer executing the database seeding and console launches directly inside the VM terminal (after configuring your parameters in the browser):
+1. **Configure Parameters:** Open the Configurator Portal (`localhost:8504`), select your database product, GCP Project, and scale profile, then click **"Save Configuration"** to generate the active parameters file on the VM.
+2. **Provision and Compile:** Run the setup script to deploy Terraform infrastructure and compile DDL schemas/data on disk:
    ```bash
    ./setup_demo.sh
    ```
-2. **Review:** Inspect the compiled schema at `config/use_cases/<use_case>/schema.sql`.
-3. **Seed and Launch:** Once reviewed, run the execution script to seed the database and start the Streamlit presentation dashboard in the background:
+3. **Review:** Inspect the compiled schema at `config/use_cases/<use_case>/schema.sql`.
+4. **Seed and Launch:** Once reviewed, run the execution script to seed the database and start the Streamlit presentation dashboard in the background:
    ```bash
    ./run_demo.sh
    ```
-4. **Present:** Open `http://localhost:8501` to view your live, seeded presentation console.
+5. **Present:** Open `http://localhost:8501` to view your live, seeded presentation console.
 
 ---
 
