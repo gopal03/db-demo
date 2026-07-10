@@ -104,6 +104,23 @@ def main():
     total_rows = 0
     
     with conn.cursor() as cur:
+        # 1. Load and execute the schema DDL (creates tables)
+        schema_file = os.path.join(use_case_dir, "schema.sql")
+        if os.path.exists(schema_file):
+            print(f"Deploying schema DDL from {schema_file}...")
+            with open(schema_file, 'r') as f:
+                schema_ddl = f.read()
+            try:
+                cur.execute(schema_ddl)
+                print("Schema DDL successfully deployed!")
+            except Exception as schema_err:
+                print(f"Error deploying schema DDL: {schema_err}")
+                conn.rollback()
+                sys.exit(1)
+        else:
+            print(f"Warning: Schema file '{schema_file}' not found. Skipping table creation...")
+
+        # 2. Ingest mock data
         for table_name, records in data.items():
             if not records:
                 continue
@@ -123,6 +140,31 @@ def main():
             
             total_rows += len(records)
             
+        # 3. Load and execute indexes & columnar configs (Post-ingestion for speed)
+        indexes_file = os.path.join(use_case_dir, "indexes.sql")
+        if os.path.exists(indexes_file):
+            print(f"Deploying database indexes from {indexes_file}...")
+            with open(indexes_file, 'r') as f:
+                indexes_ddl = f.read()
+            try:
+                cur.execute(indexes_ddl)
+                print("Database indexes successfully created!")
+            except Exception as idx_err:
+                print(f"Error creating indexes: {idx_err}")
+                conn.rollback()
+                sys.exit(1)
+
+        columnar_file = os.path.join(use_case_dir, "columnar_config.sql")
+        if os.path.exists(columnar_file):
+            print(f"Deploying AlloyDB Columnar configurations from {columnar_file}...")
+            with open(columnar_file, 'r') as f:
+                columnar_ddl = f.read()
+            try:
+                cur.execute(columnar_ddl)
+                print("AlloyDB Columnar engine configured successfully!")
+            except Exception as col_err:
+                print(f"Warning: Failed to apply columnar configuration: {col_err}")
+
         conn.commit()
         
     conn.close()
