@@ -814,6 +814,17 @@ if argolis_project and customer_name and is_auth_ok:
                             
                     if success_flag:
                         st.success("✔️ Database schema and mock data successfully seeded!")
+                        st.markdown("""
+                        ### 🎉 Seeding Complete!
+                        The database is now fully populated. You are ready to launch and present the demo dashboard:
+                        
+                        * **Demo Explorer URL:** [http://localhost:8501](http://localhost:8501)
+                        
+                        To launch the Explorer app inside your VM terminal, run:
+                        ```bash
+                        streamlit run app.py --server.port 8501
+                        ```
+                        """)
                         
         # --- Step 3: Teardown Infrastructure ---
         with st.container(border=True):
