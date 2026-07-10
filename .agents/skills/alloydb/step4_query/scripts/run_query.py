@@ -8,25 +8,25 @@ def load_json(path):
     with open(path, 'r') as f:
         return json.load(f)
 
+import argparse
+
 def main():
-    params_path = "config/demo_parameters.json"
+    parser = argparse.ArgumentParser(description="AlloyDB Query Runner.")
+    parser.add_argument('--parameters', default='config/demo_parameters.json', help='Path to active_parameters.json')
+    args = parser.parse_args()
+    
+    params_path = args.parameters
     if not os.path.exists(params_path):
         print(f"Error: Parameter file {params_path} not found.")
         sys.exit(1)
         
     params = load_json(params_path)
     target_database = params.get("target_database", "alloydb")
-    use_case = params.get("demo_context", {}).get("use_case")
+    use_case_dir = os.path.dirname(params_path)
     
-    if not use_case:
-        print("Error: Active use case not specified in demo_parameters.json.")
-        sys.exit(1)
-        
-    use_case_dir = os.path.join("config/use_cases", use_case.lower().replace(" ", "_"))
-    
-    queries_file = os.path.join(use_case_dir, f"{target_database}/queries.json")
+    queries_file = os.path.join(use_case_dir, "queries.json")
     if not os.path.exists(queries_file):
-        queries_file = os.path.join(use_case_dir, "queries.json")
+        queries_file = os.path.join(use_case_dir, f"{target_database}/queries.json")
         if not os.path.exists(queries_file):
             print(f"Error: Queries file not found. Expected: {queries_file}")
             sys.exit(1)
@@ -37,7 +37,7 @@ def main():
     host = db_config.get("host", "127.0.0.1")
     port = db_config.get("port", 5432)
     user = db_config.get("user", "postgres")
-    password = db_config.get("password", "postgres")
+    password = db_config.get("password", "alloydb_password_123")
     database_id = db_config.get("database_id", "postgres")
     
     print(f"Connecting to {target_database.upper()} at {host}:{port}...")
@@ -47,7 +47,8 @@ def main():
             port=port,
             user=user,
             password=password,
-            database=database_id
+            database=database_id,
+            sslmode="require"
         )
     except Exception as e:
         print(f"Error connecting to database: {e}")
