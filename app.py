@@ -18,7 +18,7 @@ PARAMS_FILE = "config/demo_parameters.json"
 
 st.set_page_config(
     layout="wide",
-    page_title="Spanner Graph Demo Console",
+    page_title="Demo Console",
     page_icon="🛡️",
     initial_sidebar_state="expanded"
 )
@@ -103,18 +103,7 @@ st.markdown("""
 
 def load_parameters():
     if not os.path.exists(PARAMS_FILE):
-        # Fallback default
-        return {
-            "project_id": "YOUR_PROJECT_ID",
-            "instance_id": "spanner-graph-demo-instance",
-            "database_id": "spanner-graph-demo-db",
-            "demo_context": {
-                "customer_name": "Acme Corp",
-                "industry": "General",
-                "use_case": "Demo",
-                "use_case_config": ""
-            }
-        }
+        return None
     with open(PARAMS_FILE, 'r') as f:
         data = json.load(f)
         
@@ -235,6 +224,10 @@ def render_dynamic_graph(df, height="500px"):
 # --- Main Application Controller ---
 def main():
     params = load_parameters()
+    if not params:
+        st.error("⚠️ Active demo configuration not found! Please open the **Configurator Portal** (port 8504) first to configure, deploy, and seed your database.")
+        st.stop()
+        
     demo_ctx = params.get("demo_context", {})
     active_config_path = demo_ctx.get("use_case_config", "")
     
