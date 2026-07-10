@@ -76,7 +76,7 @@ Run the SSH connection output in your terminal. This establishes a secure tunnel
 gcloud compute ssh db-workstation \
   --zone=us-central1-a \
   --tunnel-through-iap \
-  -- -L 8501:localhost:8501 -L 8504:localhost:8504
+  -- -q -L 8501:localhost:8501 -L 8504:localhost:8504
 ```
 
 #### Step 3: Launch Demos
