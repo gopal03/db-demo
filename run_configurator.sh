@@ -28,4 +28,4 @@ else
 fi
 
 echo -e "${GREEN}Launching Configurator UI...${NC}"
-streamlit run configurator.py
+streamlit run configurator.py --server.port 8504
