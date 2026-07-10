@@ -263,12 +263,21 @@ def main():
             st.code(f"Target DB: {params.get('target_database', 'spanner')}")
         
     target_database = params.get("target_database", "spanner")
-    database = get_database_adapter(target_database, params)
+    try:
+        database = get_database_adapter(target_database, params)
+        db_online = database.is_online()
+        conn_error = None
+    except Exception as e:
+        database = None
+        db_online = False
+        conn_error = str(e)
     
     # Check Connection Status
-    if not database.is_online():
+    if not db_online:
         with st.sidebar:
             st.error("Database connection: OFFLINE")
+            if conn_error:
+                st.caption(f"Error: {conn_error}")
             st.caption("Please check your database parameters or provision the instance.")
     else:
         with st.sidebar:
@@ -280,8 +289,10 @@ def main():
         st.markdown(f"#### Customer Presentation Engine — Prepared for **{demo_ctx.get('customer_name')}**")
         st.markdown("---")
         
-        if not database.is_online():
+        if not db_online:
             st.warning("⚠️ No database connection found. Please go to the **Control Panel** to set up and seed your database.")
+            if conn_error:
+                st.error(f"Details: {conn_error}")
             st.stop()
             
         use_case_config = load_use_case_config(active_config_path)
@@ -363,8 +374,10 @@ def main():
         st.markdown("Execute raw, custom Spanner GQL queries directly and visualize results dynamically.")
         st.markdown("---")
         
-        if not database.is_online():
+        if not db_online:
             st.warning("⚠️ No database connection found. Connect in the Control Panel.")
+            if conn_error:
+                st.error(f"Details: {conn_error}")
             st.stop()
             
         default_query = "SELECT * FROM Players LIMIT 10;"
