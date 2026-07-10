@@ -148,6 +148,7 @@ def main():
     if args.alloydb_columnar:
         columnar_statements = []
         columnar_statements.append("-- AlloyDB Columnar Engine setup configuration")
+        columnar_statements.append("CREATE EXTENSION IF NOT EXISTS google_columnar_engine;")
         for node in config.get("nodes", []):
             columnar_statements.append(f"SELECT google_columnar_engine.add_resources('{node['table_name']}');")
         for edge in config.get("edges", []):
