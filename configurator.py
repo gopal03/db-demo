@@ -381,6 +381,12 @@ with col2:
             placeholder="Add special setup requirements or focus features."
         )
         
+        demo_focus = st.text_area(
+            "Key Presentation Focus Points",
+            placeholder="e.g., Highlight sub-second query latency and Columnar Engine speedups.",
+            help="Keywords like 'latency', 'throughput', or 'cost' will dynamically re-arrange dashboard widgets."
+        )
+        
         dataset_size = st.select_slider(
             "Dataset Size / Scale Profile",
             options=["small", "medium", "large"],
@@ -449,6 +455,7 @@ if argolis_project and customer_name and is_auth_ok:
     active_params["demo_context"]["industry"] = industry
     active_params["demo_context"]["use_case"] = use_case if use_case else "Database Demo"
     active_params["demo_context"]["use_case_config"] = use_case_config_path
+    active_params["demo_context"]["demo_focus"] = demo_focus
     
     if "data_config" not in active_params:
         active_params["data_config"] = {}
@@ -764,23 +771,25 @@ if argolis_project and customer_name and is_auth_ok:
         # --- Step 2: Schema & Ingestion Seeding ---
         with st.container(border=True):
             st.markdown("#### **Step 4.2: Seed Database Schema & Data**")
-            st.markdown("Synthesize mock database records and load them directly into your database cluster.")
+            st.markdown("Compile SQL DDL schemas and synthesize mock datasets for review, then apply them to the cluster.")
             
-            ingest_console = st.empty()
-            if st.button("📥 Ingest Schema & Data", key="btn_ingest"):
-                with st.spinner("Seeding database..."):
+            # Step 4.2.1: Compile DDL & Data Plan
+            st.markdown("##### **Step 4.2.1: Compile Schema & Data Plan**")
+            compile_console = st.empty()
+            if st.button("📝 Compile Schema & Data Plan", key="btn_compile"):
+                with st.spinner("Compiling schemas and simulating datasets..."):
                     success_flag = True
                     
                     # 1. Run Schema Generator (only if script exists)
                     schema_gen_script = f".agents/skills/{product}/step1_schema/scripts/generate_schema.py"
                     if os.path.exists(schema_gen_script):
-                        ingest_console.info("Step 1: Running Schema DDL Generator...")
+                        compile_console.info("Step 1: Running Schema DDL Generator...")
                         config_path = os.path.join(use_case_dir, "use_case_config.json")
                         schema_path = os.path.join(use_case_dir, "schema.sql")
                         indexes_path = os.path.join(use_case_dir, "indexes.sql")
                         columnar_path = os.path.join(use_case_dir, "columnar_config.sql")
                         cmd = f"python3 {schema_gen_script} --config {config_path} --output-schema {schema_path} --output-indexes {indexes_path} --alloydb-columnar {columnar_path}"
-                        rc = run_command_live(cmd, ".", ingest_console)
+                        rc = run_command_live(cmd, ".", compile_console)
                         if rc != 0:
                             st.error(f"❌ Schema DDL generation failed (code {rc})")
                             success_flag = False
@@ -789,29 +798,52 @@ if argolis_project and customer_name and is_auth_ok:
                     if success_flag:
                         data_gen_script = f".agents/skills/{product}/step2_data/scripts/generate_data.py"
                         if os.path.exists(data_gen_script):
-                            ingest_console.info("Step 2: Generating Mock Data simulation...")
+                            compile_console.info("Step 2: Generating Mock Data simulation...")
                             config_path = os.path.join(use_case_dir, "use_case_config.json")
                             output_data_path = os.path.join(use_case_dir, "dummy_data.json")
                             cmd = f"python3 {data_gen_script} --config {config_path} --parameters {use_case_params_path} --output {output_data_path}"
-                            rc = run_command_live(cmd, ".", ingest_console)
+                            rc = run_command_live(cmd, ".", compile_console)
                             if rc != 0:
                                 st.error(f"❌ Mock Data simulation failed (code {rc})")
                                 success_flag = False
                                 
-                    # 3. Run Data Loader (always runs)
                     if success_flag:
-                        loader_script = f".agents/skills/{product}/step3_load/scripts/load_data.py"
-                        if os.path.exists(loader_script):
-                            ingest_console.info("Step 3: Uploading schema & seeding records...")
-                            cmd = f"python3 {loader_script} --parameters {use_case_params_path}"
-                            rc = run_command_live(cmd, ".", ingest_console)
-                            if rc != 0:
-                                st.error(f"❌ Database ingestion failed (code {rc})")
-                                success_flag = False
-                        else:
-                            st.error(f"Loader script '{loader_script}' not found!")
+                        st.session_state["plan_compiled"] = True
+                        compile_console.success("✔️ Plan compiled successfully on disk!")
+            
+            # Show plan details if compiled
+            schema_path = os.path.join(use_case_dir, "schema.sql")
+            if st.session_state.get("plan_compiled") and os.path.exists(schema_path):
+                st.info("📝 Compiled SQL Schema Plan Preview:")
+                try:
+                    with open(schema_path, "r") as sf:
+                        st.code(sf.read(), language="sql")
+                except Exception as e:
+                    st.error(f"Failed to read schema.sql: {e}")
+            
+            st.markdown("---")
+            
+            # Step 4.2.2: Apply & Ingest
+            st.markdown("##### **Step 4.2.2: Apply Schema & Seed Database**")
+            ingest_console = st.empty()
+            
+            # Enable Apply button only after compiling plan
+            btn_seed_disabled = not st.session_state.get("plan_compiled")
+            if st.button("🚀 Apply Schema & Seed Database", key="btn_ingest", disabled=btn_seed_disabled):
+                with st.spinner("Seeding database..."):
+                    success_flag = True
+                    loader_script = f".agents/skills/{product}/step3_load/scripts/load_data.py"
+                    if os.path.exists(loader_script):
+                        ingest_console.info("Uploading schema & seeding records...")
+                        cmd = f"python3 {loader_script} --parameters {use_case_params_path}"
+                        rc = run_command_live(cmd, ".", ingest_console)
+                        if rc != 0:
+                            st.error(f"❌ Database ingestion failed (code {rc})")
                             success_flag = False
-                            
+                    else:
+                        st.error(f"Loader script '{loader_script}' not found!")
+                        success_flag = False
+                        
                     if success_flag:
                         st.success("✔️ Database schema and mock data successfully seeded!")
                         st.markdown("""
