@@ -24,3 +24,8 @@ resource "google_redis_instance" "redis" {
   region             = var.region
   authorized_network = data.google_compute_network.network.id
 }
+
+output "db_host_ip" {
+  value       = google_redis_instance.redis.host
+  description = "The IP address of the Memorystore Redis instance"
+}

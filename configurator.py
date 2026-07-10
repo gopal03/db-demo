@@ -722,6 +722,38 @@ if argolis_project and customer_name and is_auth_ok:
                     rc = run_command_live(cmd, tf_dir, tf_console)
                     
                     if rc == 0:
+                        # Capture TF output to retrieve the dynamic database host IP
+                        try:
+                            output_cmd = f"terraform output -json -state=\"state_{use_case_clean}.tfstate\""
+                            out_proc = subprocess.run(
+                                output_cmd,
+                                shell=True,
+                                cwd=tf_dir,
+                                capture_output=True,
+                                text=True
+                            )
+                            if out_proc.returncode == 0:
+                                tf_outputs = json.loads(out_proc.stdout)
+                                db_host_ip = tf_outputs.get("db_host_ip", {}).get("value")
+                                if db_host_ip:
+                                    # Update the local active params dict
+                                    if "database_configs" not in active_params:
+                                        active_params["database_configs"] = {}
+                                    if product not in active_params["database_configs"]:
+                                        active_params["database_configs"][product] = {}
+                                    
+                                    active_params["database_configs"][product]["host"] = db_host_ip
+                                    
+                                    # Save updated parameters back to active_parameters.json
+                                    with open(use_case_params_path, "w") as f:
+                                        json.dump(active_params, f, indent=2)
+                                    tf_console.success(f"✔️ Infrastructure deployed successfully! Captured Database Host IP: {db_host_ip}")
+                                else:
+                                    tf_console.success("✔️ Infrastructure deployed successfully!")
+                            else:
+                                tf_console.success("✔️ Infrastructure deployed successfully! (Warning: Failed to read Terraform outputs)")
+                        except Exception as out_err:
+                            tf_console.success(f"✔️ Infrastructure deployed successfully! (Warning: Failed to capture DB Host IP: {out_err})")
                         st.success("✔️ Infrastructure deployed successfully!")
                     else:
                         st.error(f"❌ Terraform deployment failed with return code {rc}")

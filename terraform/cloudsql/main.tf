@@ -44,3 +44,8 @@ resource "google_sql_user" "user" {
   instance = google_sql_database_instance.instance.name
   password = var.db_password
 }
+
+output "db_host_ip" {
+  value       = google_sql_database_instance.instance.first_ip_address
+  description = "The IP address of the Cloud SQL instance"
+}

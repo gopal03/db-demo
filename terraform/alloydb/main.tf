@@ -38,3 +38,8 @@ resource "google_alloydb_instance" "instance" {
     cpu_count = 2
   }
 }
+
+output "db_host_ip" {
+  value       = google_alloydb_cluster.cluster.ip_address
+  description = "The private IP address of the AlloyDB cluster"
+}
