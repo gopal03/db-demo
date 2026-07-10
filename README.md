@@ -174,3 +174,27 @@ If Terraform fails with `The referenced network resource cannot be found` (indic
      -var="subnet_name=YOUR_SUBNET_NAME" \
      -auto-approve
    ```
+
+---
+
+## 8. Cleanup & Teardown
+
+To avoid ongoing GCP billing charges, destroy all provisioned resources when you finish your presentation session.
+
+Because the workstation VM and database clusters are modularly decoupled, they must be destroyed sequentially in their respective folders:
+
+### Step 1: Destroy the Database Cluster first
+Navigate to the directory of the active database you provisioned (e.g., AlloyDB) and run destroy:
+```bash
+cd terraform/alloydb
+terraform destroy -var="project_id=YOUR_PROJECT_ID" -auto-approve
+```
+
+### Step 2: Destroy the Workstation VM second
+Navigate to the workstation folder and run destroy:
+```bash
+cd ../workstation
+terraform destroy -var="project_id=YOUR_PROJECT_ID" -auto-approve
+```
+
+*(Note: Always destroy the database cluster first to prevent active network peering dependencies from blocking the workstation NAT router and firewall teardown.)*
