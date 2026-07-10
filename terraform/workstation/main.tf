@@ -25,7 +25,7 @@ resource "google_project_iam_member" "db_roles" {
     "roles/alloydb.admin",
     "roles/spanner.admin",
     "roles/bigtable.admin",
-    "roles/firestore.admin",
+    "roles/datastore.owner",
     "roles/redis.admin",
     "roles/compute.networkUser"
   ])
