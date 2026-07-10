@@ -191,16 +191,18 @@ st.markdown("""
 # --- Helper Functions ---
 def verify_gcp_access(project_id):
     try:
-        # Run gcloud projects describe to verify authentication
-        subprocess.run(
+        res = subprocess.run(
             ["gcloud", "projects", "describe", project_id, "--format=json"],
             capture_output=True,
             text=True,
             check=True
         )
         return True, "GCP Access Verified!"
-    except Exception:
-        return False, "Could not access project. Verify that you ran 'gcloud auth login' and 'gcloud auth application-default login' and that your project ID is correct."
+    except subprocess.CalledProcessError as e:
+        err_msg = e.stderr or e.stdout or str(e)
+        return False, f"Could not access project '{project_id}': {err_msg.strip()}"
+    except Exception as e:
+        return False, f"Could not execute 'gcloud': {str(e)}"
 
 def run_command_live(cmd, cwd, console_placeholder):
     try:
