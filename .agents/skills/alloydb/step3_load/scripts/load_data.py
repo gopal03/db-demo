@@ -139,6 +139,9 @@ def main():
                     sys.exit(1)
             
             total_rows += len(records)
+        # Commit table schemas and data records first!
+        conn.commit()
+        print("Schema DDL and datasets successfully committed!")
             
         # 3. Load and execute indexes & columnar configs (Post-ingestion for speed)
         indexes_file = os.path.join(use_case_dir, "indexes.sql")
@@ -148,7 +151,8 @@ def main():
                 indexes_ddl = f.read()
             try:
                 cur.execute(indexes_ddl)
-                print("Database indexes successfully created!")
+                conn.commit()
+                print("Database indexes successfully created and committed!")
             except Exception as idx_err:
                 print(f"Error creating indexes: {idx_err}")
                 conn.rollback()
@@ -161,11 +165,11 @@ def main():
                 columnar_ddl = f.read()
             try:
                 cur.execute(columnar_ddl)
-                print("AlloyDB Columnar engine configured successfully!")
+                conn.commit()
+                print("AlloyDB Columnar engine configured successfully and committed!")
             except Exception as col_err:
-                print(f"Warning: Failed to apply columnar configuration: {col_err}")
-
-        conn.commit()
+                print(f"Warning: Failed to apply columnar configuration (skipping): {col_err}")
+                conn.rollback()
         
     conn.close()
     
