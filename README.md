@@ -84,62 +84,28 @@ Open your browser and go to `http://localhost:8504` to configure and launch your
 
 ---
 
-### Option B: Local Laptop Setup
-
-If you prefer to run the demo framework locally on your corporate machine:
-
-#### Step 1: Clone the Repo
-```bash
-git clone https://github.com/gopal03/db-demo.git
-cd db-demo
-```
-
-#### Step 2: Install UV Package Manager (Recommended)
-For 100x faster package installation and virtualenv setups, install the `uv` tool globally:
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-#### Step 3: Launch Configurator Portal
-Run the startup script. It checks if `uv` is available to instantly install virtual environments and dependencies; if not, it automatically falls back to standard `pip`:
-```bash
-./run_configurator.sh
-```
-Open `http://localhost:8504` in your browser.
-
-#### Step 4: Authenticate GCP SDK
-Ensure your local SDK credentials are active:
-```bash
-gcloud auth login
-gcloud auth application-default login
-```
-
----
-
 ## 5. Operational Presentation Workflow
 
-1. **Configure & Plan:** In the Configurator Portal (`localhost:8504`), select your database product, GCP Project, and scale profile. Saving configuration generates a local `active_parameters.json` config.
-2. **Provision Infrastructure (Terraform):** Click **🚀 Provision Infrastructure** in the Configurator panel to provision database instances.
-3. **Ingest & Seed:** Click **📥 Seed & Plan Dashboard** to compile SQL DDL schemas, generate mock records, and seed the tables.
-4. **Present:** Start the Demo Explorer Dashboard (Streamlit running on port `8501`) and share your screen to present the database benchmarks and explain plans.
-5. **Teardown:** When done, click **🗑️ Destroy Infrastructure** to delete instances and prevent unnecessary sandbox costs.
+### Path A: Interactive Browser Portal (Recommended)
+1. **Configure & Plan:** In the Configurator Portal (`localhost:8504`), select your database product, GCP Project, and scale profile. Clicking **"Save Configuration"** updates your environment.
+2. **Provision Infrastructure (Terraform):** Click **🚀 Provision Infrastructure** to deploy resources dynamically.
+3. **Compile Schema & Data Plan:** Under **Step 4.2.1**, click **"📝 Compile Schema & Data Plan"** to write DDL schemas and mock records to the VM disk, then preview the generated SQL on-screen.
+4. **Apply Schema & Seed Database:** Under **Step 4.2.2**, click **"🚀 Apply Schema & Seed Database"** (enabled after compile) to execute the schema and load the records.
+5. **Present:** Open the Demo Explorer Dashboard (`http://localhost:8501`) to present benchmark metrics and interactive sandbox query traversals.
+6. **Teardown:** When done, click **🗑️ Destroy Infrastructure** (or use advanced settings) to terminate instances.
 
----
-
-## 6. Local Setup Troubleshooting (macOS Gatekeeper/Santa)
-
-If you are running the framework locally (Option B) and your configurator console displays a `Failed to load plugin schemas` error during provisioning:
-1. Open your host terminal (outside the IDE sandboxed terminal).
-2. Navigate to the target folder:
+### Path B: Two-Script CLI Workflow
+If you prefer executing the database seeding and console launches directly inside the VM terminal:
+1. **Provision and Compile:** Run the setup script to deploy Terraform infrastructure and compile DDL schemas/data on disk:
    ```bash
-   cd terraform/alloydb  # Or terraform/spanner, etc.
+   ./setup_demo.sh
    ```
-3. Run the Terraform command directly:
+2. **Review:** Inspect the compiled schema at `config/use_cases/<use_case>/schema.sql`.
+3. **Seed and Launch:** Once reviewed, run the execution script to seed the database and start the Streamlit presentation dashboard in the background:
    ```bash
-   terraform init
-   terraform apply -auto-approve
+   ./run_demo.sh
    ```
-4. Return to the Configurator Portal UI (`localhost:8504`) to complete the **Seed & Plan** and presentation steps.
+4. **Present:** Open `http://localhost:8501` to view your live, seeded presentation console.
 
 ---
 
