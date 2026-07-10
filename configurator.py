@@ -531,7 +531,8 @@ if argolis_project and customer_name and is_auth_ok:
                     "cluster_id": al_cluster_id,
                     "instance_id": al_instance_id,
                     "database_id": al_db_id,
-                    "network_name": al_network
+                    "network_name": al_network,
+                    "host": db_config_existing.get("host", "")
                 }
             }
             
@@ -575,7 +576,8 @@ if argolis_project and customer_name and is_auth_ok:
                     "database_version": cs_version,
                     "tier": cs_tier,
                     "db_username": cs_username,
-                    "db_password": cs_password
+                    "db_password": cs_password,
+                    "host": db_config_existing.get("host", "")
                 }
             }
             
@@ -666,7 +668,8 @@ if argolis_project and customer_name and is_auth_ok:
                     "instance_id": ms_instance_id,
                     "tier": ms_tier,
                     "memory_size_gb": ms_memory,
-                    "network_name": ms_network
+                    "network_name": ms_network,
+                    "host": db_config_existing.get("host", "")
                 }
             }
             
