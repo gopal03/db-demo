@@ -40,6 +40,6 @@ resource "google_alloydb_instance" "instance" {
 }
 
 output "db_host_ip" {
-  value       = google_alloydb_cluster.cluster.ip_address
-  description = "The private IP address of the AlloyDB cluster"
+  value       = google_alloydb_instance.instance.ip_address
+  description = "The private IP address of the AlloyDB primary instance"
 }
