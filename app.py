@@ -23,81 +23,89 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Premium Dark Glassmorphism CSS ---
-st.markdown("""
-<style>
-    /* Main Canvas */
-    .stApp {
-        background-color: #0B0C10;
-        color: #E0E0E0;
-        font-family: 'Inter', 'Outfit', sans-serif;
+# --- Premium Dynamic CSS Theme Engine ---
+def apply_industry_theme(industry):
+    themes = {
+        "Gaming": {
+            "bg": "#0B0C10", "card_bg": "rgba(30, 31, 46, 0.6)", "border": "rgba(255, 255, 255, 0.08)",
+            "accent": "#FFD700", "sidebar": "#12131C", "text": "#E0E0E0", "btn_grad": "linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%)"
+        },
+        "Financial Services": {
+            "bg": "#0A1128", "card_bg": "rgba(16, 29, 66, 0.7)", "border": "rgba(0, 204, 150, 0.15)",
+            "accent": "#00CC96", "sidebar": "#001F54", "text": "#F4F7F6", "btn_grad": "linear-gradient(135deg, #00CC96 0%, #008080 100%)"
+        },
+        "Retail": {
+            "bg": "#18122B", "card_bg": "rgba(44, 30, 90, 0.6)", "border": "rgba(225, 90, 151, 0.2)",
+            "accent": "#E15A97", "sidebar": "#393053", "text": "#F1F0F4", "btn_grad": "linear-gradient(135deg, #E15A97 0%, #A22E60 100%)"
+        },
+        "Healthcare": {
+            "bg": "#0F2027", "card_bg": "rgba(32, 58, 67, 0.7)", "border": "rgba(75, 159, 239, 0.2)",
+            "accent": "#4B9FEF", "sidebar": "#203A43", "text": "#EAF2F8", "btn_grad": "linear-gradient(135deg, #4B9FEF 0%, #1D63B8 100%)"
+        }
     }
+    t = themes.get(industry, themes["Gaming"])
     
-    /* Sidebar styling */
-    section[data-testid="stSidebar"] {
-        background-color: #12131C !important;
-        border-right: 1px solid #1F202E;
-    }
-    
-    /* Translucent Glassmorphism Cards */
-    .glass-card {
-        background: rgba(30, 31, 46, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        padding: 22px;
-        margin-bottom: 20px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-    
-    /* Metrics / Telemetry */
-    .metric-value {
-        font-size: 2.2em;
-        font-weight: bold;
-        color: #FFD700; /* Gold */
-        margin-bottom: 4px;
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    }
-    .metric-value.alert {
-        color: #FF4B4B; /* Glowing Crimson */
-        text-shadow: 0 0 10px rgba(255, 75, 75, 0.4);
-    }
-    .metric-label {
-        font-size: 0.85em;
-        color: #8E90A6;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    /* Buttons */
-    .stButton>button {
-        background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%) !important;
-        color: #0B0C10 !important;
-        border: none !important;
-        border-radius: 6px !important;
-        font-weight: bold !important;
-        padding: 10px 20px !important;
-        transition: all 0.3s ease !important;
-    }
-    .stButton>button:hover {
-        box-shadow: 0 0 15px rgba(212, 175, 55, 0.5) !important;
-        transform: translateY(-2px) !important;
-    }
-    
-    /* Headers */
-    h1, h2, h3 {
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-    }
-    
-    /* Code Blocks */
-    code {
-        color: #FF79C6 !important;
-        background-color: #1E1F29 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+    st.markdown(f"""
+    <style>
+        .stApp {{
+            background-color: {t['bg']};
+            color: {t['text']};
+            font-family: 'Inter', 'Outfit', sans-serif;
+        }}
+        section[data-testid="stSidebar"] {{
+            background-color: {t['sidebar']} !important;
+            border-right: 1px solid {t['border']};
+        }}
+        .glass-card {{
+            background: {t['card_bg']};
+            border: 1px solid {t['border']};
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }}
+        .metric-value {{
+            font-size: 2.2em;
+            font-weight: bold;
+            color: {t['accent']};
+            margin-bottom: 4px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+        }}
+        .metric-value.alert {{
+            color: #FF4B4B;
+            text-shadow: 0 0 10px rgba(255, 75, 75, 0.4);
+        }}
+        .metric-label {{
+            font-size: 0.85em;
+            color: #8E90A6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        .stButton>button {{
+            background: {t['btn_grad']} !important;
+            color: #0B0C10 !important;
+            border: none !important;
+            border-radius: 6px !important;
+            font-weight: bold !important;
+            padding: 10px 20px !important;
+            transition: all 0.3s ease !important;
+        }}
+        .stButton>button:hover {{
+            box-shadow: 0 0 15px {t['accent']}50 !important;
+            transform: translateY(-2px) !important;
+        }}
+        h1, h2, h3 {{
+            color: #FFFFFF !important;
+            font-weight: 700 !important;
+        }}
+        code {{
+            color: #FF79C6 !important;
+            background-color: #1E1F29 !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- Helper Functions ---
 
@@ -229,6 +237,7 @@ def main():
         st.stop()
         
     demo_ctx = params.get("demo_context", {})
+    apply_industry_theme(demo_ctx.get("industry", "Gaming"))
     active_config_path = demo_ctx.get("use_case_config", "")
     
     # 1. Sidebar Control
