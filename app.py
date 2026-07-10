@@ -7,11 +7,11 @@ from decimal import Decimal
 import pandas as pd
 from pyvis.network import Network
 import streamlit.components.v1 as components
-from google.cloud import spanner
-from google.cloud import spanner_admin_instance_v1
+
 
 # Add .agents/skills to sys.path to allow importing from skills
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".agents/skills")))
+from lib.db_adapters import get_database_adapter
 
 # --- Configuration & Paths ---
 PARAMS_FILE = "config/demo_parameters.json"
@@ -100,9 +100,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Helper Functions ---
-@st.cache_resource
-def get_spanner_client(project_id):
-    return spanner.Client(project=project_id)
 
 def load_parameters():
     if not os.path.exists(PARAMS_FILE):
@@ -156,18 +153,7 @@ def load_use_case_config(config_path):
     with open(config_path, 'r') as f:
         return json.load(f)
 
-def get_database_connection(client, instance_id, database_id):
-    try:
-        instance = client.instance(instance_id)
-        if not instance.exists():
-            return None
-        database = instance.database(database_id)
-        if not database.exists():
-            return None
-        return database
-    except Exception:
-        # Suppress API and IAM auth errors, degrading gracefully to OFFLINE
-        return None
+
 
 # --- Dynamic Graph Parser & Renderer (Generic Heuristic) ---
 def render_dynamic_graph(df, height="500px"):
@@ -271,18 +257,17 @@ def main():
         if unlock_admin:
             st.markdown("---")
             st.markdown("### Database Status")
-            st.code(f"Project: {params['project_id']}")
-            st.code(f"Instance: {params['instance_id']}")
-            st.code(f"DB: {params['database_id']}")
+            st.code(f"Project: {params.get('project_id')}")
+            st.code(f"Target DB: {params.get('target_database', 'spanner')}")
         
-    client = get_spanner_client(params["project_id"])
-    database = get_database_connection(client, params["instance_id"], params["database_id"])
+    target_database = params.get("target_database", "spanner")
+    database = get_database_adapter(target_database, params)
     
     # Check Connection Status
-    if database is None:
+    if not database.is_online():
         with st.sidebar:
             st.error("Database connection: OFFLINE")
-            st.caption("Please check your Spanner parameters or provision the database.")
+            st.caption("Please check your database parameters or provision the instance.")
     else:
         with st.sidebar:
             st.success("Database connection: ONLINE")
@@ -293,7 +278,7 @@ def main():
         st.markdown(f"#### Customer Presentation Engine — Prepared for **{demo_ctx.get('customer_name')}**")
         st.markdown("---")
         
-        if database is None:
+        if not database.is_online():
             st.warning("⚠️ No database connection found. Please go to the **Control Panel** to set up and seed your database.")
             st.stop()
             
@@ -309,13 +294,7 @@ def main():
             table_name = node["table_name"]
             label_name = node["name"]
             
-            # Fetch row count dynamically using standard SQL via Spanner
-            try:
-                with database.snapshot() as snapshot:
-                    result = list(snapshot.execute_sql(f"SELECT COUNT(*) FROM {table_name}"))
-                    count = result[0][0]
-            except Exception:
-                count = "-"
+            count = database.get_row_count(table_name)
                 
             with cols[idx]:
                 st.markdown(f"""
@@ -343,26 +322,32 @@ def main():
                 
                 tab_viz, tab_data, tab_code = st.tabs(["Graph Visualization", "Tabular Data", "GQL Query"])
                 
-                # Execute query
+                # Execute query via adapter
                 try:
-                    with database.snapshot() as snapshot:
-                        results = snapshot.execute_sql(selected_query["gql"])
-                        rows = list(results)
-                        headers = [field.name for field in results.fields] if results.fields else []
-                        
-                    if rows:
-                        df = pd.DataFrame(rows, columns=headers)
-                        
+                    df = database.execute_query(selected_query)
+                    if not df.empty:
                         with tab_viz:
                             st.info(f"🗣️ **Sales Talk Track**: {selected_query['talk_track']}")
-                            html = render_dynamic_graph(df)
-                            components.html(html, height=500, scrolling=True)
-                            
+                            if use_case_config.get("graph_name"):
+                                html = render_dynamic_graph(df)
+                                components.html(html, height=500, scrolling=True)
+                            else:
+                                # Relational datasets: Render charts dynamically
+                                num_cols = df.select_dtypes(include=['number']).columns.tolist()
+                                str_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+                                if num_cols and str_cols:
+                                    st.bar_chart(df, x=str_cols[0], y=num_cols[0])
+                                elif len(num_cols) >= 2:
+                                    st.scatter_chart(df, x=num_cols[0], y=num_cols[1])
+                                else:
+                                    st.dataframe(df, use_container_width=True)
+                                    
                         with tab_data:
                             st.dataframe(df, use_container_width=True)
                             
                         with tab_code:
-                            st.code(selected_query["gql"], language="sql")
+                            query_code = selected_query.get("sql") or selected_query.get("gql") or ""
+                            st.code(query_code, language="sql")
                     else:
                         st.warning("No records matched this threat scenario. (Database is clean!)")
                 except Exception as e:
@@ -376,26 +361,32 @@ def main():
         st.markdown("Execute raw, custom Spanner GQL queries directly and visualize results dynamically.")
         st.markdown("---")
         
-        if database is None:
+        if not database.is_online():
             st.warning("⚠️ No database connection found. Connect in the Control Panel.")
             st.stop()
             
-        custom_gql = st.text_area("GQL Query", value="GRAPH AMLGraph\nMATCH (a:Account)-[t:Transfers]->(b:Account)\nRETURN a.account_id, b.account_id, t.amount\nLIMIT 10", height=150)
+        default_query = "SELECT * FROM Players LIMIT 10;"
+        sandbox_label = "SQL Query"
+        if target_database == "spanner":
+            default_query = "GRAPH AMLGraph\nMATCH (a:Account)-[t:Transfers]->(b:Account)\nRETURN a.account_id, b.account_id, t.amount\nLIMIT 10"
+            sandbox_label = "GQL Query"
+        elif target_database == "memorystore":
+            default_query = "*"
+            sandbox_label = "Redis Key Pattern"
+            
+        custom_gql = st.text_area(sandbox_label, value=default_query, height=150)
         
         if st.button("Execute Sandbox Query"):
             try:
-                with database.snapshot() as snapshot:
-                    results = snapshot.execute_sql(custom_gql)
-                    rows = list(results)
-                    headers = [field.name for field in results.fields] if results.fields else []
-                    
-                if rows:
-                    df = pd.DataFrame(rows, columns=headers)
+                # Execute custom search/query via adapter
+                df = database.execute_query({"sql": custom_gql, "redis_pattern": custom_gql, "collection": custom_gql, "table_id": custom_gql})
+                if not df.empty:
                     st.dataframe(df, use_container_width=True)
                     
-                    st.subheader("Dynamic Graph Rendering")
-                    html = render_dynamic_graph(df)
-                    components.html(html, height=500, scrolling=True)
+                    if use_case_config.get("graph_name"):
+                        st.subheader("Dynamic Graph Rendering")
+                        html = render_dynamic_graph(df)
+                        components.html(html, height=500, scrolling=True)
                 else:
                     st.info("Query returned no records.")
             except Exception as e:
