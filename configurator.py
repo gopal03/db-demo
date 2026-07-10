@@ -697,6 +697,10 @@ if argolis_project and customer_name and is_auth_ok:
     with open(use_case_params_path, "w") as f:
         json.dump(active_params, f, indent=2)
         
+    # Sync with main demo_parameters.json so app.py knows which use case to boot
+    with open(PARAMS_TEMPLATE_PATH, "w") as f:
+        json.dump(active_params, f, indent=2)
+        
     out_col1, out_col2 = st.columns([1, 1], gap="large")
     
     with out_col1:
@@ -758,6 +762,8 @@ if argolis_project and customer_name and is_auth_ok:
                                     
                                     # Save updated parameters back to active_parameters.json
                                     with open(use_case_params_path, "w") as f:
+                                        json.dump(active_params, f, indent=2)
+                                    with open(PARAMS_TEMPLATE_PATH, "w") as f:
                                         json.dump(active_params, f, indent=2)
                                     tf_console.success(f"✔️ Infrastructure deployed successfully! Captured Database Host IP: {db_host_ip}")
                                 else:
