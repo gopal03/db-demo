@@ -10,6 +10,8 @@ def load_json(path):
     with open(path, 'r') as f:
         return json.load(f)
 
+import argparse
+
 def get_insert_query(table_name, record):
     columns = list(record.keys())
     placeholders = [f"%({col})s" for col in columns]
@@ -17,20 +19,18 @@ def get_insert_query(table_name, record):
     return query
 
 def main():
-    params_path = "config/demo_parameters.json"
+    parser = argparse.ArgumentParser(description="Generic Cloud SQL Loader.")
+    parser.add_argument('--parameters', default='config/demo_parameters.json', help='Path to active_parameters.json')
+    args = parser.parse_args()
+    
+    params_path = args.parameters
     if not os.path.exists(params_path):
         print(f"Error: Parameter file {params_path} not found.")
         sys.exit(1)
         
     params = load_json(params_path)
     target_database = params.get("target_database", "cloudsql")
-    use_case = params.get("demo_context", {}).get("use_case")
-    
-    if not use_case:
-        print("Error: Active use case not specified in demo_parameters.json.")
-        sys.exit(1)
-        
-    use_case_dir = os.path.join("config/use_cases", use_case.lower().replace(" ", "_"))
+    use_case_dir = os.path.dirname(params_path)
     
     db_config = params.get("database_configs", {}).get(target_database, {})
     host = db_config.get("host", "127.0.0.1")
@@ -39,9 +39,9 @@ def main():
     password = db_config.get("password", "postgres")
     database_id = db_config.get("database_id", "postgres")
     
-    data_file = os.path.join(use_case_dir, f"{target_database}/dummy_data.json")
+    data_file = os.path.join(use_case_dir, "dummy_data.json")
     if not os.path.exists(data_file):
-        data_file = os.path.join(use_case_dir, "dummy_data.json")
+        data_file = os.path.join(use_case_dir, f"{target_database}/dummy_data.json")
         if not os.path.exists(data_file):
             print(f"Error: Data file not found under {use_case_dir}.")
             sys.exit(1)
