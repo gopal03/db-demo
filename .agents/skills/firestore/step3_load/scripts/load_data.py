@@ -26,29 +26,31 @@ def extract_operations(collection_ref, items, ops_list):
             sub_col_ref = doc_ref.collection(sub_name)
             extract_operations(sub_col_ref, sub_items, ops_list)
 
+import argparse
+
 def main():
-    params_path = "config/demo_parameters.json"
+    parser = argparse.ArgumentParser(description="Generic Firestore Loader.")
+    parser.add_argument('--parameters', default='config/demo_parameters.json', help='Path to active_parameters.json')
+    args = parser.parse_args()
+    
+    params_path = args.parameters
     if not os.path.exists(params_path):
         print(f"Error: Parameter file {params_path} not found.")
         sys.exit(1)
         
     params = load_json(params_path)
     project_id = params.get("project_id")
-    use_case = params.get("demo_context", {}).get("use_case")
-    
-    if not use_case:
-        print("Error: Active use case not specified in demo_parameters.json.")
-        sys.exit(1)
-        
-    use_case_dir = os.path.join("config/use_cases", use_case.lower().replace(" ", "_"))
+    use_case_dir = os.path.dirname(params_path)
     
     fs_config = params.get("database_configs", {}).get("firestore", {})
     database_id = fs_config.get("database_id", "(default)")
     
-    data_file = os.path.join(use_case_dir, "firestore/dummy_data.json")
+    data_file = os.path.join(use_case_dir, "dummy_data.json")
     if not os.path.exists(data_file):
-        print(f"Error: Data file {data_file} not found. Run Step 2 first.")
-        sys.exit(1)
+        data_file = os.path.join(use_case_dir, "firestore/dummy_data.json")
+        if not os.path.exists(data_file):
+            print(f"Error: Data file not found under {use_case_dir}.")
+            sys.exit(1)
         
     data = load_json(data_file)
     
