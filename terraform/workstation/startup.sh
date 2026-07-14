@@ -11,11 +11,25 @@ until curl -sSf https://www.google.com > /dev/null 2>&1; do
 done
 echo "Internet connectivity established!"
 
-# 1. Set environment variables globally for all bash sessions
+# 1. Resolve variables (support both Terraform templatefile and raw gcloud metadata)
+PROJECT_ID="${project_id}"
+REGION="${region}"
+GITHUB_REPO_URL="${github_repo_url}"
+
+if [[ "$PROJECT_ID" == *"project_id"* || -z "$PROJECT_ID" ]]; then
+  get_metadata() {
+    curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/$1" || echo ""
+  }
+  PROJECT_ID=$(get_metadata "project_id")
+  REGION=$(get_metadata "region")
+  GITHUB_REPO_URL=$(get_metadata "github_repo_url")
+fi
+
 echo "# Lab specific ENV vars" >> /etc/bash.bashrc
-echo "export GOOGLE_CLOUD_PROJECT=${project_id}" >> /etc/bash.bashrc
-echo "export GOOGLE_CLOUD_LOCATION=${region}" >> /etc/bash.bashrc
-echo 'export PATH=$${PATH}:/opt/google-cloud-sdk/bin' >> /etc/bash.bashrc
+echo "export GOOGLE_CLOUD_PROJECT=$PROJECT_ID" >> /etc/bash.bashrc
+echo "export GOOGLE_CLOUD_LOCATION=$REGION" >> /etc/bash.bashrc
+echo 'export PATH=$PATH:/opt/google-cloud-sdk/bin' >> /etc/bash.bashrc
+
 
 # 2. Increase open files limit for benchmark throughput
 echo "# Increase open files for running benchmarks" >> /etc/security/limits.conf
@@ -62,7 +76,10 @@ ln -sf /opt/google-cloud-sdk/bin/bq /usr/local/bin/bq
 
 # 6. Clone the repository and setup local requirements
 mkdir -p /opt/db-demo
-git clone ${github_repo_url} /opt/db-demo
+if [ -z "$GITHUB_REPO_URL" ]; then
+  GITHUB_REPO_URL="https://github.com/gopalbhutada/db-demo.git"
+fi
+git clone "$GITHUB_REPO_URL" /opt/db-demo
 
 cd /opt/db-demo
 # Set up environment using uv
@@ -75,3 +92,5 @@ chmod -R 777 /opt/db-demo
 chown -R ubuntu:ubuntu /opt/google-cloud-sdk
 
 echo "=== Workstation Setup Complete ==="
+touch /tmp/setup_complete
+

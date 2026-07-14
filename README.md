@@ -57,30 +57,31 @@ You can run this demo framework in one of two ways:
 
 ### Option A: Dedicated GCE Workstation VM (Recommended)
 This approach runs the entire database framework inside a private Google Compute Engine VM. It is highly recommended because it:
-* Bypasses all local corporate macOS Santa/Gatekeeper security blocks.
+* Bypasses all local corporate macOS security blocks by executing Terraform and database binaries entirely inside the Cloud VM.
 * Configures implicit metadata service account authentication (no credential files needed).
 * Accesses AlloyDB/Cloud SQL instances directly using private VPC IPs (no public endpoints needed).
-* Pre-installs `uv`, `golang`, and Google Cloud CLI components.
+* Pre-installs `uv` and Google Cloud CLI components.
 
-#### Step 1: Provision the Workstation VM (from local terminal)
-```bash
-cd terraform/workstation
-terraform init
-terraform apply -auto-approve
-```
-*This outputs a custom `ssh_connection_command` to connect to your workstation VM.*
+To launch the workstation VM, set up the environment, and establish connection tunnels automatically, execute the following steps in your local Mac terminal:
 
-#### Step 2: Connect and Tunnel Streamlit Ports
-Run the SSH connection output in your terminal. This establishes a secure tunnel and forwards ports 8501 and 8504 to your local machine:
+#### Step 1: Authenticate to your GCP Environment
+Run these commands locally to ensure your CLI is authenticated to your target sandbox project:
 ```bash
-gcloud compute ssh db-workstation \
-  --zone=us-central1-a \
-  --tunnel-through-iap \
-  -- -q -L 8501:localhost:8501 -L 8504:localhost:8504
+gcloud auth login
+gcloud auth application-default login
 ```
 
-#### Step 3: Launch Demos
-Open your browser and go to `http://localhost:8504` to configure and launch your database demos.
+#### Step 2: Run the One-Click Launcher Script
+Execute the launcher script from the root of the cloned repository:
+```bash
+./launch_workstation.sh
+```
+*This script will provision the VM, wait for configuration to complete, start port-forwarding, and display clickable links to launch the portals in your browser.*
+
+#### Step 3: Open the Portals
+Once the script prints the launch links, click them to open the dashboards:
+* **Configurator Portal:** [http://localhost:8504](http://localhost:8504)
+* **Demo Console:** [http://localhost:8501](http://localhost:8501)
 
 ---
 
@@ -157,11 +158,9 @@ cd terraform/alloydb
 terraform destroy -var="project_id=YOUR_PROJECT_ID" -auto-approve
 ```
 
-### Step 2: Destroy the Workstation VM second
-Navigate to the workstation folder and run destroy:
+### Step 2: Delete the Workstation VM second
+Run the following command from your local terminal to delete the VM instance:
 ```bash
-cd ../workstation
-terraform destroy -var="project_id=YOUR_PROJECT_ID" -auto-approve
+gcloud compute instances delete db-workstation --zone=us-central1-a --project=YOUR_PROJECT_ID --quiet
 ```
-
 *(Note: Always destroy the database cluster first to prevent active network peering dependencies from blocking the workstation NAT router and firewall teardown.)*
